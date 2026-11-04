@@ -72,6 +72,10 @@ export class LocalRepository implements Repository {
 
   resetPairing(): void {}
 
+  async verifyPairing(): Promise<'paired'> {
+    return 'paired';
+  }
+
   // --- reads -------------------------------------------------------------------------
 
   private async getDoc(path: string): Promise<Record<string, unknown> | null> {

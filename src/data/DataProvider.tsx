@@ -44,16 +44,30 @@ export function DataProvider({ repo, children }: Props) {
   useEffect(() => repo.subscribeSync(setSync), [repo]);
 
   // Live subscriptions while the tablet is ready (paired).
+  const [subscriptionRun, setSubscriptionRun] = useState(0);
+  const deniedRetries = useRef(0);
   useEffect(() => {
     if (status !== 'ready') return;
+    let handled = false;
     const onError = (err: { code: string }) => {
-      // Access revoked: this tablet was unlinked from another one.
-      if (err.code === 'permission-denied') {
-        repo.resetPairing();
-        reinit();
-      } else {
+      if (err.code !== 'permission-denied') {
         console.error(err);
+        return;
       }
+      if (handled) return;
+      handled = true;
+      unsubs.forEach((u) => u());
+      // Firestore can briefly deny real-time listeners right after a tablet is paired, so only
+      // forget the pairing when the server confirms this tablet's device document is gone.
+      repo.verifyPairing().then((state) => {
+        if (state === 'unpaired') {
+          repo.resetPairing();
+          reinit();
+          return;
+        }
+        const delay = Math.min(30_000, 2_000 * 2 ** deniedRetries.current++);
+        setTimeout(() => setSubscriptionRun((n) => n + 1), delay);
+      });
     };
     const unsubs = [
       repo.subscribeCollection<Dish>('dishes', (x) => setDishes([...x].sort(sortItems) as Dish[]), onError),
@@ -64,8 +78,11 @@ export function DataProvider({ repo, children }: Props) {
       repo.subscribeConfig(setConfig, onError),
       repo.subscribeDevices(setDevices, onError),
     ];
-    return () => unsubs.forEach((u) => u());
-  }, [repo, status, reinit]);
+    return () => {
+      handled = true;
+      unsubs.forEach((u) => u());
+    };
+  }, [repo, status, reinit, subscriptionRun]);
 
   // Background jobs: translations and offline copies of full-size photos.
   const itemsRef = useRef<CatalogItem[]>([]);

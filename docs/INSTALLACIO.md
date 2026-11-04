@@ -28,35 +28,68 @@ npm install
 
 ## 2. Firebase (dades)
 
-1. Ves a <https://console.firebase.google.com> i crea un projecte nou (per exemple `tavernapp`).
-   No cal activar Google Analytics.
-2. **Firestore Database** → *Crear base de dades* → mode **producció** → ubicació `europe-southwest1` (Madrid).
-3. **Authentication** → *Comença* → pestanya *Sign-in method* → activa **Anònim**.
-4. **Configuració del projecte** (roda dentada) → *Les teves aplicacions* → icona `</>` (Web) → registra l'app.
-   Copia els valors de `firebaseConfig`.
-5. Copia `.env.example` a `.env.local` i omple-hi els valors:
+> **Ja fet** per al projecte `tavernapp-964e1b` (consola:
+> <https://console.firebase.google.com/project/tavernapp-964e1b/overview>). La configuració web és a
+> `.env.local` (no es puja a git). Aquests passos només cal repetir-los en un ordinador nou o per a un
+> projecte nou.
 
-```bash
-cp .env.example .env.local
-```
-
-6. Publica les regles de seguretat de Firestore (fitxer `firestore.rules`):
+1. Inicia sessió amb el compte de Google del restaurant:
 
 ```bash
 npx -y firebase-tools@15 login
 ```
 
+2. Crea el projecte (l'identificador ha de ser únic a tot Google) i deixa'l com a projecte per defecte a
+   `.firebaserc`:
+
 ```bash
-npx -y firebase-tools@15 use --add
+npx -y firebase-tools@15 projects:create tavernapp-xxxxxx --display-name TavernApp
+```
+
+3. Registra l'app web i copia la configuració que mostra el segon comandament a `.env.local`
+   (a partir de `.env.example`):
+
+```bash
+npx -y firebase-tools@15 apps:create web TavernApp
+```
+
+```bash
+npx -y firebase-tools@15 apps:sdkconfig web
+```
+
+4. Crea la base de dades a Madrid (si diu que l'API no està activada, activa-la amb l'enllaç que mostra i
+   torna-ho a provar al cap d'un parell de minuts):
+
+```bash
+npx -y firebase-tools@15 firestore:databases:create "(default)" --location europe-southwest1
+```
+
+5. Activa l'inici de sessió anònim (definit a `firebase.json`) i publica les regles de seguretat
+   (`firestore.rules`):
+
+```bash
+npx -y firebase-tools@15 deploy --only auth
 ```
 
 ```bash
 npm run rules:deploy
 ```
 
-> Si el desplegament de les regles dona un error de compilació, avisa: les regles fan servir
-> `hashing.sha256()` per verificar el codi del restaurant i s'han de validar contra el teu projecte.
-> Les pots provar a la consola: *Firestore → Regles → Zona de proves de regles*.
+> Les regles acabades de publicar poden trigar **fins a 10 minuts** a aplicar-se a les connexions en temps
+> real. Si just després de crear el projecte l'app diu "No s'ha pogut accedir a la base de dades
+> (permission-denied)", espera uns minuts i toca *Torna-ho a provar*.
+
+### Projecte de proves
+
+Hi ha un segon projecte, `tavernapp-test-1926b6` ("TavernApp PROVES"), per provar canvis sense tocar les
+dades reals. La seva configuració és a `.env.staging.local` (tampoc no es puja a git):
+
+```bash
+npm run dev:staging
+```
+
+Si no el necessites, el pots esborrar a la consola de Firebase: *Configuració del projecte → General →
+Suprimeix el projecte*.
 
 ## 3. DeepL (traducció)
 

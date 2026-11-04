@@ -8,6 +8,12 @@
       "port": 5173
     },
     {
+      "name": "tavernapp-staging",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:staging", "--", "--port", "5175", "--strictPort", "--host", "127.0.0.1"],
+      "port": 5175
+    },
+    {
       "name": "tavernapp-preview",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "preview", "--", "--port", "4173", "--strictPort"],

@@ -54,6 +54,9 @@ const NETWORK_TIMEOUT_MS = 20_000;
 // Firestore batches allow 500 writes and ~10 MiB; images can be ~0.7 MB each.
 const BATCH_MAX_OPS = 400;
 const BATCH_MAX_BYTES = 7_000_000;
+const INIT_RETRY_DELAYS_MS = [1_500, 3_000, 6_000];
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function toRepoError(err: unknown): RepoError {
   const fsErr = err as Partial<FirestoreError>;
@@ -132,16 +135,42 @@ export class FirestoreRepository implements Repository {
       this.touchLastSeen();
       return { status: 'ready' };
     }
-    try {
-      const device = await withTimeout(getDoc(doc(this.db, 'devices', user.uid)));
-      if (device.exists()) {
-        localStorage.setItem(PAIRED_KEY, user.uid);
-        return { status: 'ready' };
+    // Fresh anonymous users and newly deployed rules can see a few transient
+    // permission-denied answers, so those are retried before giving up.
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const device = await withTimeout(getDoc(doc(this.db, 'devices', user.uid)));
+        if (device.exists()) {
+          localStorage.setItem(PAIRED_KEY, user.uid);
+          return { status: 'ready' };
+        }
+        const pub = await withTimeout(getDoc(doc(this.db, 'config', 'public')));
+        return pub.exists() && pub.data().initialized ? { status: 'needsPairing' } : { status: 'needsSetup' };
+      } catch (err) {
+        const code = toRepoError(err).code;
+        if (code === 'permission-denied' && attempt < INIT_RETRY_DELAYS_MS.length) {
+          await delay(INIT_RETRY_DELAYS_MS[attempt]);
+          continue;
+        }
+        console.error('Firestore init failed', err);
+        return {
+          status: 'error',
+          message:
+            code === 'unavailable' || code === 'timeout' || !navigator.onLine
+              ? 'Sense connexió. Connecta la tablet a internet per vincular-la.'
+              : `No s'ha pogut accedir a la base de dades (${code}).`,
+        };
       }
-      const pub = await withTimeout(getDoc(doc(this.db, 'config', 'public')));
-      return pub.exists() && pub.data().initialized ? { status: 'needsPairing' } : { status: 'needsSetup' };
+    }
+  }
+
+  async verifyPairing(): Promise<'paired' | 'unpaired' | 'unknown'> {
+    if (!navigator.onLine) return 'unknown';
+    try {
+      const device = await withTimeout(getDocFromServer(doc(this.db, 'devices', this.deviceId)));
+      return device.exists() ? 'paired' : 'unpaired';
     } catch {
-      return { status: 'error', message: 'Sense connexió. Connecta la tablet a internet per vincular-la.' };
+      return 'unknown';
     }
   }
 

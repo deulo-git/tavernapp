@@ -56,6 +56,8 @@ export interface Repository {
   pair(code: string, deviceName: string): Promise<PairResult>;
   /** Forgets the locally remembered pairing (e.g. after this tablet was unlinked elsewhere). */
   resetPairing(): void;
+  /** Asks the server whether this tablet is still paired ('unknown' when it can't be checked). */
+  verifyPairing(): Promise<'paired' | 'unpaired' | 'unknown'>;
 
   subscribeCollection<T>(name: CollectionName, onData: (items: T[]) => void, onError: ErrorHandler): Unsubscribe;
   subscribeInfo(onData: (info: RestaurantInfo | null) => void, onError: ErrorHandler): Unsubscribe;
