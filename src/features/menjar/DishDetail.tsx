@@ -1,19 +1,21 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useData } from '../../data/store';
 import { formatPrice } from '../../domain/format';
-import { PRESENT_LABELS, TAG_LABELS } from '../../domain/presentLabels';
-import { hasTranslation, translatedField } from '../../domain/translation';
 import type { Dish } from '../../domain/types';
 import { DISH_TAGS } from '../../domain/types';
 import { AllergenList } from '../../ui/Allergens';
 import { Button, IconButton } from '../../ui/Button';
-import { ItemImage } from '../../ui/ItemImage';
 import { Sheet } from '../../ui/Sheet';
 import ui from '../../ui/ui.module.css';
 import { useEditMode } from '../edit-mode/editMode';
-import { PresentView } from '../present/PresentView';
-import { DetailLayout, DetailSection, ExplanationBlock, UnavailableNotice, UpdatedNote } from '../catalog/DetailParts';
+import {
+  DetailImage,
+  DetailLayout,
+  DetailSection,
+  ExplanationBlock,
+  UnavailableNotice,
+  UpdatedNote,
+} from '../catalog/DetailParts';
 import s from '../catalog/detail.module.css';
 
 interface Props {
@@ -30,7 +32,6 @@ export function DishDetail({ dish, categoryName, prev, next, onClose, onEdit, on
   const { drinks } = useData();
   const { editing } = useEditMode();
   const navigate = useNavigate();
-  const [presenting, setPresenting] = useState(false);
   const pairings = dish.pairings.map((id) => drinks.find((d) => d.id === id)).filter((d) => d !== undefined);
 
   return (
@@ -54,23 +55,7 @@ export function DishDetail({ dish, categoryName, prev, next, onClose, onEdit, on
         </>
       }
     >
-      <DetailLayout
-        aside={
-          <>
-            <button
-              type="button"
-              style={{ padding: 0, border: 0, background: 'none' }}
-              onClick={() => setPresenting(true)}
-              aria-label="Mostra al client"
-            >
-              <ItemImage itemId={dish.id} image={dish.image} alt={dish.name} icon="plate" full className={s.image} />
-            </button>
-            <Button variant="primary" size="lg" icon="present" block onClick={() => setPresenting(true)}>
-              Mostra al client
-            </Button>
-          </>
-        }
-      >
+      <DetailLayout aside={<DetailImage itemId={dish.id} image={dish.image} alt={dish.name} icon="plate" />}>
         <div className={s.headline}>
           <h1 className={s.name}>{dish.name}</h1>
           <div className={s.metaRow}>
@@ -126,34 +111,6 @@ export function DishDetail({ dish, categoryName, prev, next, onClose, onEdit, on
 
         <UpdatedNote item={dish} />
       </DetailLayout>
-
-      {presenting && (
-        <PresentView
-          itemId={dish.id}
-          image={dish.image}
-          icon="plate"
-          allergens={dish.allergens}
-          traces={dish.traces}
-          available={(l) => l === 'ca' || hasTranslation(dish, l)}
-          onClose={() => setPresenting(false)}
-          content={(lang) => {
-            const ingredients = translatedField(dish, lang, 'ingredients').split('\n').filter(Boolean).join(', ');
-            const diet = dish.tags
-              .filter((t) => t !== 'recomanat' && t !== 'temporada')
-              .map((t) => TAG_LABELS[t][lang]);
-            return {
-              title: translatedField(dish, lang, 'name'),
-              originalTitle: lang === 'ca' ? undefined : dish.name,
-              description: translatedField(dish, lang, 'explanation'),
-              price: formatPrice(dish.price),
-              facts: [
-                ...(ingredients ? [{ label: PRESENT_LABELS.ingredients[lang], value: ingredients }] : []),
-                ...(diet.length ? [{ label: PRESENT_LABELS.diet[lang], value: diet.join(' · ') }] : []),
-              ],
-            };
-          }}
-        />
-      )}
     </Sheet>
   );
 }

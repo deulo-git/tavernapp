@@ -232,4 +232,4 @@ Estructura principal:
 - `src/ui/` — components tàctils reutilitzables.
 - `worker/` — Cloudflare Worker: serveix l'app i fa de pont amb DeepL (`/api/translate`).
 - `firestore.rules` — regles d'accés i validació de dades.
-- `npm run icons` — regenera icones i pantalles d'inici de l'iPad a partir de `public/logo.svg`.
+- `npm run icons` — regenera icones i pantalles d'inici de l'iPad a partir de `public/logo.png`.

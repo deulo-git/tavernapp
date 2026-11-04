@@ -1,3 +1,4 @@
+import type { AllergenDef } from '../domain/allergens';
 import type { Category, CatalogItem, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
 import type { Repository, StoredImage, WriteOp } from './repository';
 
@@ -13,6 +14,8 @@ export interface BackupFile {
   guides: Guide[];
   info: RestaurantInfo | null;
   images: StoredImage[];
+  /** Allergen list (missing in backups made before it became editable). */
+  allergens?: AllergenDef[];
 }
 
 export interface BackupSource {
@@ -21,6 +24,7 @@ export interface BackupSource {
   drinks: Drink[];
   guides: Guide[];
   info: RestaurantInfo | null;
+  allergens?: AllergenDef[];
 }
 
 export type BackupValidation = { ok: true; backup: BackupFile } | { ok: false; error: string };
@@ -60,7 +64,7 @@ export async function buildBackup(repo: Repository, source: BackupSource): Promi
     const data = await repo.getImage(item.id, item.image.v);
     if (data) images.push({ id: item.id, v: item.image.v, data });
   }
-  const { categories, dishes, drinks, guides, info } = source;
+  const { categories, dishes, drinks, guides, info, allergens } = source;
   return {
     format: BACKUP_FORMAT,
     version: 1,
@@ -71,6 +75,7 @@ export async function buildBackup(repo: Repository, source: BackupSource): Promi
     guides,
     info,
     images,
+    allergens,
   };
 }
 
@@ -92,6 +97,7 @@ export function restoreOps(backup: BackupFile, current: BackupSource): WriteOp[]
     .map((i) => ({ id: i.id }));
   sync('images', backup.images, currentImageIds as StoredImage[]);
 
+  if (backup.allergens?.length) sync('allergens', backup.allergens, current.allergens ?? []);
   if (backup.info) ops.push({ type: 'set', path: 'info/restaurant', data: backup.info });
   return ops;
 }

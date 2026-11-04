@@ -31,6 +31,7 @@ import {
   MapPin,
   Martini,
   Moon,
+  PanelRight,
   Pencil,
   Phone,
   Plus,
@@ -102,6 +103,7 @@ const ICONS = {
   eye: Eye,
   key: KeyRound,
   backspace: Delete,
+  panel: PanelRight,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

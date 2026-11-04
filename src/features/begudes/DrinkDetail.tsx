@@ -1,19 +1,15 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useData } from '../../data/store';
 import { DRINK_TYPES, drinkSpecRows, formatSpecValue } from '../../domain/drinkSpecs';
-import { formatAbv, formatPrice } from '../../domain/format';
-import { PRESENT_LABELS } from '../../domain/presentLabels';
-import { hasTranslation, translatedField } from '../../domain/translation';
+import { formatAbv } from '../../domain/format';
 import type { Drink } from '../../domain/types';
 import { AllergenList } from '../../ui/Allergens';
 import { Button, IconButton } from '../../ui/Button';
-import { ItemImage } from '../../ui/ItemImage';
 import { Sheet } from '../../ui/Sheet';
 import ui from '../../ui/ui.module.css';
 import { useEditMode } from '../edit-mode/editMode';
-import { PresentView } from '../present/PresentView';
 import {
+  DetailImage,
   DetailLayout,
   DetailSection,
   ExplanationBlock,
@@ -37,7 +33,6 @@ export function DrinkDetail({ drink, prev, next, onClose, onEdit, onDelete }: Pr
   const { dishes } = useData();
   const { editing } = useEditMode();
   const navigate = useNavigate();
-  const [presenting, setPresenting] = useState(false);
   const def = DRINK_TYPES[drink.type];
   const icon = DRINK_ICON[drink.type];
   const pairedDishes = dishes.filter((d) => d.pairings.includes(drink.id));
@@ -64,31 +59,7 @@ export function DrinkDetail({ drink, prev, next, onClose, onEdit, onDelete }: Pr
         </>
       }
     >
-      <DetailLayout
-        aside={
-          <>
-            <button
-              type="button"
-              style={{ padding: 0, border: 0, background: 'none' }}
-              onClick={() => setPresenting(true)}
-              aria-label="Mostra al client"
-            >
-              <ItemImage
-                itemId={drink.id}
-                image={drink.image}
-                alt={drink.name}
-                icon={icon}
-                full
-                contain
-                className={s.image}
-              />
-            </button>
-            <Button variant="primary" size="lg" icon="present" block onClick={() => setPresenting(true)}>
-              Mostra al client
-            </Button>
-          </>
-        }
-      >
+      <DetailLayout aside={<DetailImage itemId={drink.id} image={drink.image} alt={drink.name} icon={icon} contain />}>
         <div className={s.headline}>
           <h1 className={s.name}>{drink.name}</h1>
           <div className={s.metaRow}>
@@ -131,32 +102,6 @@ export function DrinkDetail({ drink, prev, next, onClose, onEdit, onDelete }: Pr
 
         <UpdatedNote item={drink} />
       </DetailLayout>
-
-      {presenting && (
-        <PresentView
-          itemId={drink.id}
-          image={drink.image}
-          icon={icon}
-          allergens={drink.allergens}
-          traces={drink.traces}
-          available={(l) => l === 'ca' || hasTranslation(drink, l)}
-          onClose={() => setPresenting(false)}
-          content={(lang) => {
-            const grapes = drink.type === 'vi' ? formatSpecValue(drink.specs.varietats) : '';
-            const vintage = drink.type === 'vi' ? formatSpecValue(drink.specs.anyada) : '';
-            const facts = [
-              { label: PRESENT_LABELS.producer[lang], value: drink.producer },
-              { label: PRESENT_LABELS.origin[lang], value: drink.origin },
-              { label: PRESENT_LABELS.grapes[lang], value: grapes },
-              { label: PRESENT_LABELS.vintage[lang], value: vintage },
-              { label: PRESENT_LABELS.abv[lang], value: drink.abv !== null ? formatAbv(drink.abv) : '' },
-              { label: PRESENT_LABELS.glass[lang], value: formatPrice(drink.priceGlass) },
-              { label: PRESENT_LABELS.bottle[lang], value: formatPrice(drink.priceBottle) },
-            ].filter((f) => f.value);
-            return { title: drink.name, description: translatedField(drink, lang, 'explanation'), facts };
-          }}
-        />
-      )}
     </Sheet>
   );
 }

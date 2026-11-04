@@ -611,7 +611,7 @@ const guides: Guide[] = [
 function info(): RestaurantInfo {
   return {
     name: RESTAURANT_NAME,
-    tagline: 'Cuina catalana de mercat',
+    tagline: 'Repositori pel treballador',
     address: '',
     phone: '',
     email: '',

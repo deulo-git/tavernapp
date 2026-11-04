@@ -23,22 +23,59 @@ export const ALLERGENS = [
   { key: 'molluscs', ca: 'Mol·luscs', es: 'Moluscos', en: 'Molluscs', fr: 'Mollusques', color: '#2c8c8c' },
 ] as const;
 
-export type AllergenKey = (typeof ALLERGENS)[number]['key'];
+/** Allergens are stored by id; the 14 official ones use their key as id. */
+export type AllergenKey = string;
 export type UiLang = 'ca' | 'es' | 'en' | 'fr';
 
-const BY_KEY = new Map(ALLERGENS.map((a) => [a.key, a]));
-
-export function allergenInfo(key: AllergenKey) {
-  return BY_KEY.get(key)!;
+/** An allergen of the restaurant's list (editable in Configuració). */
+export interface AllergenDef {
+  id: string;
+  /** Catalan name. */
+  name: string;
+  es: string;
+  en: string;
+  fr: string;
+  color: string;
+  order: number;
+  updatedAt?: number;
 }
 
-export function allergenLabel(key: AllergenKey, lang: UiLang = 'ca'): string {
-  return BY_KEY.get(key)?.[lang] ?? key;
+/** The 14 EU allergens, used until the restaurant edits its own list. */
+export const DEFAULT_ALLERGENS: AllergenDef[] = ALLERGENS.map((a, order) => ({
+  id: a.key,
+  name: a.ca,
+  es: a.es,
+  en: a.en,
+  fr: a.fr,
+  color: a.color,
+  order,
+}));
+
+/** The stored list once the restaurant has customised it, otherwise the official 14. */
+export function resolveAllergens(stored: readonly AllergenDef[]): AllergenDef[] {
+  const list = stored.length ? [...stored] : [...DEFAULT_ALLERGENS];
+  return list.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'ca'));
 }
 
-export function isAllergenKey(value: unknown): value is AllergenKey {
-  return typeof value === 'string' && BY_KEY.has(value as AllergenKey);
+export function allergenName(def: AllergenDef, lang: UiLang = 'ca'): string {
+  return (lang === 'ca' ? def.name : def[lang])?.trim() || def.name;
 }
+
+/** Strong colours for allergen badges (white pictogram on top). */
+export const ALLERGEN_COLORS = [
+  '#b7862c',
+  '#d0573a',
+  '#c49a12',
+  '#2f6f9f',
+  '#4f86c6',
+  '#4e9a52',
+  '#2c8c8c',
+  '#7b5ea7',
+  '#7a2e4a',
+  '#9b6a3c',
+  '#5b5b5b',
+  '#c2185b',
+];
 
 export type AllergenStatus = 'safe' | 'traces' | 'contains';
 

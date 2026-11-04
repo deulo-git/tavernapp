@@ -146,7 +146,7 @@ export interface AppConfig {
 
 export type CatalogItem = Dish | Drink | Guide;
 export type ItemCollection = 'dishes' | 'drinks' | 'guides';
-export type CollectionName = ItemCollection | 'categories';
+export type CollectionName = ItemCollection | 'categories' | 'allergens';
 
 export const COLLECTION_OF: Record<CatalogItem['kind'], ItemCollection> = {
   dish: 'dishes',

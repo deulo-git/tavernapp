@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { resolveAllergens, type AllergenDef } from '../domain/allergens';
 import type { AppConfig, Category, CatalogItem, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
 import { itemTitle } from '../domain/types';
 import type { Repository, SyncState } from './repository';
@@ -22,6 +23,7 @@ export function DataProvider({ repo, children }: Props) {
   const [drinks, setDrinks] = useState<Drink[] | null>(null);
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [guides, setGuides] = useState<Guide[] | null>(null);
+  const [storedAllergens, setStoredAllergens] = useState<AllergenDef[]>([]);
   const [info, setInfo] = useState<RestaurantInfo | null>(null);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [sync, setSync] = useState<SyncState>({ online: true, pendingWrites: 0 });
@@ -66,6 +68,7 @@ export function DataProvider({ repo, children }: Props) {
       repo.subscribeCollection<Drink>('drinks', (x) => setDrinks([...x].sort(sortItems) as Drink[]), onError),
       repo.subscribeCollection<Guide>('guides', (x) => setGuides([...x].sort(sortItems) as Guide[]), onError),
       repo.subscribeCollection<Category>('categories', (x) => setCategories([...x].sort(sortCategories)), onError),
+      repo.subscribeCollection<AllergenDef>('allergens', setStoredAllergens, onError),
       repo.subscribeInfo(setInfo, onError),
       repo.subscribeConfig(setConfig, onError),
     ];
@@ -111,13 +114,29 @@ export function DataProvider({ repo, children }: Props) {
       drinks: drinks ?? [],
       categories: categories ?? [],
       guides: guides ?? [],
+      allergens: resolveAllergens(storedAllergens),
+      allergensCustomized: storedAllergens.length > 0,
       info,
       config,
       sync,
       reinit,
       kickTranslations,
     }),
-    [repo, status, error, dishes, drinks, categories, guides, info, config, sync, reinit, kickTranslations],
+    [
+      repo,
+      status,
+      error,
+      dishes,
+      drinks,
+      categories,
+      guides,
+      storedAllergens,
+      info,
+      config,
+      sync,
+      reinit,
+      kickTranslations,
+    ],
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

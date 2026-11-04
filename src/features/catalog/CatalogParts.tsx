@@ -1,20 +1,42 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { TILE_COLORS, tileStyle, type TileColor } from '../../domain/colors';
-import type { AllergenKey } from '../../domain/allergens';
 import type { ImageRef } from '../../domain/types';
-import { AllergenBadges } from '../../ui/Allergens';
-import { IconButton } from '../../ui/Button';
+import { Button, IconButton } from '../../ui/Button';
+import { RailContext, useRail } from './railContext';
 import { Icon, type IconName } from '../../ui/Icon';
 import { ItemImage } from '../../ui/ItemImage';
 import ui from '../../ui/ui.module.css';
 import s from './catalog.module.css';
 
-export function CatalogLayout({ rail, children }: { rail: ReactNode; children: ReactNode }) {
+export function CatalogLayout({
+  rail,
+  children,
+  defaultOpen = true,
+}: {
+  rail: ReactNode;
+  children: ReactNode;
+  /** Whether the index on the right starts visible. */
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const context = useMemo(() => ({ open, toggle: () => setOpen((o) => !o) }), [open]);
   return (
-    <div className={s.layout}>
-      <nav className={s.rail}>{rail}</nav>
-      <main className={s.main}>{children}</main>
-    </div>
+    <RailContext.Provider value={context}>
+      <div className={[s.layout, !open && s.layoutClosed].filter(Boolean).join(' ')}>
+        <main className={s.main}>{children}</main>
+        {open && <nav className={s.rail}>{rail}</nav>}
+      </div>
+    </RailContext.Provider>
+  );
+}
+
+/** Toolbar button that shows or hides the index on the right. */
+export function RailToggle({ label }: { label: string }) {
+  const { open, toggle } = useRail();
+  return (
+    <Button icon="panel" className={open ? s.railToggleOn : undefined} aria-pressed={open} onClick={toggle}>
+      {label}
+    </Button>
   );
 }
 
@@ -52,37 +74,6 @@ export function RailButton({
   );
 }
 
-export function SearchBox({
-  value,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-}) {
-  return (
-    <div className={s.search}>
-      <Icon name="search" className={s.searchIcon} />
-      <input
-        type="search"
-        value={value}
-        placeholder={placeholder}
-        aria-label={placeholder}
-        enterKeyHint="search"
-        autoComplete="off"
-        autoCorrect="off"
-        onChange={(e) => onChange(e.target.value)}
-      />
-      {value && (
-        <button type="button" className={s.searchClear} aria-label="Esborra la cerca" onClick={() => onChange('')}>
-          <Icon name="close" />
-        </button>
-      )}
-    </div>
-  );
-}
-
 export interface EditControls {
   onEdit: () => void;
   onDelete: () => void;
@@ -97,35 +88,15 @@ interface ItemCardProps {
   title: string;
   /** Tile colour of the item's category or type. */
   color: TileColor;
-  subtitle?: string;
-  price?: string;
-  allergens?: readonly AllergenKey[];
-  traces?: readonly AllergenKey[];
   unavailable?: boolean;
   /** Customer allergy filter: the item may contain traces. */
   warning?: boolean;
-  badges?: ReactNode;
   onOpen: () => void;
   edit?: EditControls;
 }
 
 export function ItemCard(props: ItemCardProps) {
-  const {
-    itemId,
-    image,
-    icon,
-    title,
-    color,
-    subtitle,
-    price,
-    allergens,
-    traces,
-    unavailable,
-    warning,
-    badges,
-    onOpen,
-    edit,
-  } = props;
+  const { itemId, image, icon, title, color, unavailable, warning, onOpen, edit } = props;
   return (
     <article
       className={[s.card, unavailable && s.unavailable, warning && s.cardWarning].filter(Boolean).join(' ')}
@@ -134,14 +105,7 @@ export function ItemCard(props: ItemCardProps) {
     >
       <button type="button" className={s.cardOpen} onClick={onOpen}>
         <ItemImage itemId={itemId} image={image} alt={title} icon={icon} className={s.cardImage} />
-        <div className={s.cardBody}>
-          <h3 className={s.cardTitle}>{title}</h3>
-          {subtitle && <p className={s.cardSubtitle}>{subtitle}</p>}
-          <div className={s.cardFooter}>
-            {allergens || traces ? <AllergenBadges allergens={allergens ?? []} traces={traces} size={28} /> : <span />}
-            {price && <span className={s.price}>{price}</span>}
-          </div>
-        </div>
+        <h3 className={s.cardTitle}>{title}</h3>
       </button>
       <div className={s.cardBadges}>
         {unavailable && <span className={`${ui.badge} ${ui.badgeDanger}`}>Esgotat</span>}
@@ -150,7 +114,6 @@ export function ItemCard(props: ItemCardProps) {
             <Icon name="alert" size={16} /> Pot contenir traces
           </span>
         )}
-        {badges}
       </div>
       {edit && (
         <div className={s.cardEdit}>

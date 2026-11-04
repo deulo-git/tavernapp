@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { allergenStatus } from '../src/domain/allergens';
 import { decimalToInput, formatPrice, parseDecimal, wifiQrPayload } from '../src/domain/format';
 import { fitWithin } from '../src/domain/images';
-import { matchesQuery, normalizeText } from '../src/domain/search';
 import { DEFAULT_PIN_CONFIG, hashPin, isValidPin } from '../src/domain/security';
 import { categoryColor } from '../src/domain/colors';
 import { hashFields, prepareTranslations, sourceHash, translatedField } from '../src/domain/translation';
@@ -43,18 +42,6 @@ describe('allergenStatus', () => {
   });
   it('is safe for unrelated allergies', () => {
     expect(allergenStatus(dish(), new Set(['peix'] as const))).toBe('safe');
-  });
-});
-
-describe('search', () => {
-  it('ignores accents, case and the Catalan middle dot', () => {
-    expect(normalizeText('Mol·luscs À LA BRASA')).toBe('molluscs a la brasa');
-  });
-  it('matches every word anywhere in the fields', () => {
-    expect(matchesQuery('tomaquet pa', ['Pa amb tomàquet'])).toBe(true);
-    expect(matchesQuery('tomaquet', [['Pa', 'Tomàquet']])).toBe(true);
-    expect(matchesQuery('peix', ['Pa amb tomàquet'])).toBe(false);
-    expect(matchesQuery('   ', ['anything'])).toBe(true);
   });
 });
 

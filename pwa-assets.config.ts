@@ -1,15 +1,18 @@
 import { createAppleSplashScreens, defineConfig, minimal2023Preset } from '@vite-pwa/assets-generator/config';
 
-// Generates the PWA icons and iPad launch screens from public/logo.svg: `npm run icons`.
+// Generates the PWA icons and iPad launch screens from public/logo.png: `npm run icons`.
 // The splash <link> tags it prints are pasted into index.html.
 export default defineConfig({
   headLinkOptions: { preset: '2023' },
   preset: {
     ...minimal2023Preset,
+    // iOS fills transparent icon areas with black, so home-screen icons get a white background.
+    maskable: { ...minimal2023Preset.maskable, resizeOptions: { background: '#ffffff' } },
+    apple: { ...minimal2023Preset.apple, resizeOptions: { background: '#ffffff' } },
     appleSplashScreens: createAppleSplashScreens(
       {
         padding: 0.4,
-        resizeOptions: { background: '#f7f1e8', fit: 'contain' },
+        resizeOptions: { background: '#ffffff', fit: 'contain' },
         linkMediaOptions: { log: true, addMediaScreen: true, basePath: '/', xhtml: false },
         png: { compressionLevel: 9, quality: 70 },
         name: (landscape, size) =>
@@ -27,5 +30,5 @@ export default defineConfig({
       ],
     ),
   },
-  images: ['public/logo.svg'],
+  images: ['public/logo.png'],
 });

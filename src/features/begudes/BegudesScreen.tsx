@@ -4,7 +4,6 @@ import { TopBar } from '../../app/TopBar';
 import { useData } from '../../data/store';
 import { allergenStatus } from '../../domain/allergens';
 import { DRINK_TYPES, DRINK_TYPE_ORDER, drinkFilterValue } from '../../domain/drinkSpecs';
-import { matchesQuery } from '../../domain/search';
 import { DRINK_TYPE_COLOR } from '../../domain/colors';
 import type { DrinkType } from '../../domain/types';
 import { EmptyState, Spinner } from '../../ui/EmptyState';
@@ -12,12 +11,12 @@ import ui from '../../ui/ui.module.css';
 import { useEditMode } from '../edit-mode/editMode';
 import { AllergyFilterBar, AllergyFilterButton } from '../catalog/AllergyFilter';
 import { useAllergyFilter } from '../catalog/allergyFilterContext';
-import { AddCard, CatalogLayout, ItemCard, RailButton, SearchBox } from '../catalog/CatalogParts';
+import { AddCard, CatalogLayout, ItemCard, RailButton, RailToggle } from '../catalog/CatalogParts';
 import { useCatalogActions } from '../catalog/useCatalogActions';
 import { useItemRoute } from '../catalog/useItemRoute';
 import { DrinkDetail } from './DrinkDetail';
 import { DrinkForm } from './DrinkForm';
-import { DRINK_ICON, drinkPriceLabel, drinkSubtitle } from './drinkUi';
+import { DRINK_ICON } from './drinkUi';
 import s from '../catalog/catalog.module.css';
 
 function isDrinkType(value: string | undefined): value is DrinkType {
@@ -37,7 +36,6 @@ function DrinksOfType({ type }: { type: DrinkType }) {
   const { excluded } = useAllergyFilter();
   const { deleteItem, moveHandlers } = useCatalogActions();
   const route = useItemRoute();
-  const [query, setQuery] = useState('');
   const [style, setStyle] = useState<string | null>(null);
   const def = DRINK_TYPES[type];
 
@@ -46,14 +44,10 @@ function DrinksOfType({ type }: { type: DrinkType }) {
     .find((f) => f.key === def.filterKey)!
     .options!.filter((o) => ofType.some((d) => drinkFilterValue(d) === o));
 
-  const filtered = ofType.filter(
-    (d) =>
-      (!style || drinkFilterValue(d) === style) &&
-      matchesQuery(query, [d.name, d.producer, d.origin, d.explanation, d.tastingNotes, drinkFilterValue(d)]),
-  );
+  const filtered = ofType.filter((d) => !style || drinkFilterValue(d) === style);
   const visible = filtered.filter((d) => allergenStatus(d, excluded) !== 'contains');
   const hiddenCount = filtered.length - visible.length;
-  const canReorder = editing && !query.trim() && !style && excluded.size === 0;
+  const canReorder = editing && !style && excluded.size === 0;
 
   const selected = route.itemId ? drinks.find((d) => d.id === route.itemId) : undefined;
   const selectedIndex = selected ? visible.indexOf(selected) : -1;
@@ -75,8 +69,8 @@ function DrinksOfType({ type }: { type: DrinkType }) {
         ))}
       >
         <div className={s.toolbar}>
-          <SearchBox value={query} onChange={setQuery} placeholder={`Cerca ${def.plural.toLowerCase()}`} />
           <AllergyFilterButton />
+          <RailToggle label="Tipus" />
         </div>
         {styles.length > 1 && (
           <div className={s.chipsRow}>
@@ -118,13 +112,8 @@ function DrinksOfType({ type }: { type: DrinkType }) {
                   icon={DRINK_ICON[type]}
                   color={DRINK_TYPE_COLOR[type]}
                   title={d.name}
-                  subtitle={drinkSubtitle(d)}
-                  price={drinkPriceLabel(d)}
-                  allergens={d.allergens}
-                  traces={d.traces}
                   unavailable={!d.available}
                   warning={allergenStatus(d, excluded) === 'traces'}
-                  badges={drinkFilterValue(d) ? <span className={ui.badge}>{drinkFilterValue(d)}</span> : undefined}
                   onOpen={() => route.openItem(d.id)}
                   edit={
                     editing

@@ -1,13 +1,12 @@
 import type { ReactNode } from 'react';
-import type { AllergenKey } from '../domain/allergens';
-import { allergenInfo } from '../domain/allergens';
+import type { AllergenDef } from '../domain/allergens';
 
 // Original pictograms for the 14 EU allergens, drawn white on the allergen's colour.
 const seed = (x: number, y: number, rot: number) => (
   <path d="M0 -3c1.6 1.4 1.6 4.6 0 6-1.6-1.4-1.6-4.6 0-6z" transform={`translate(${x} ${y}) rotate(${rot})`} />
 );
 
-const ART: Record<AllergenKey, ReactNode> = {
+const ART = {
   gluten: (
     <>
       <path d="M12 21V6" />
@@ -110,17 +109,20 @@ const ART: Record<AllergenKey, ReactNode> = {
       <path d="M10 20h4v1.5h-4z" />
     </>
   ),
-};
+} satisfies Record<string, ReactNode>;
 
 interface Props {
-  allergen: AllergenKey;
+  allergen: AllergenDef;
   size?: number;
   /** Outlined style, used for "may contain traces". */
   outline?: boolean;
 }
 
+/** Official allergens show their pictogram; custom ones show their initial. */
 export function AllergenIcon({ allergen, size = 40, outline = false }: Props) {
-  const { color } = allergenInfo(allergen);
+  const { color } = allergen;
+  const art = (ART as Record<string, ReactNode>)[allergen.id];
+  const ink = outline ? color : '#fff';
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
       <circle
@@ -132,16 +134,22 @@ export function AllergenIcon({ allergen, size = 40, outline = false }: Props) {
         strokeWidth={outline ? 2 : 0}
         strokeDasharray={outline ? '3 2.4' : undefined}
       />
-      <g
-        transform="translate(4 4)"
-        fill="none"
-        stroke={outline ? color : '#fff'}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {ART[allergen]}
-      </g>
+      {art ? (
+        <g
+          transform="translate(4 4)"
+          fill="none"
+          stroke={ink}
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {art}
+        </g>
+      ) : (
+        <text x="16" y="21.5" textAnchor="middle" fontSize="15" fontWeight="700" fill={ink} fontFamily="inherit">
+          {allergen.name.trim().charAt(0).toUpperCase()}
+        </text>
+      )}
     </svg>
   );
 }

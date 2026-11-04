@@ -1,21 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { TopBar } from '../../app/TopBar';
 import { useData } from '../../data/store';
 import { allergenStatus } from '../../domain/allergens';
-import { formatPrice } from '../../domain/format';
-import { matchesQuery } from '../../domain/search';
 import { TILE_COLORS, categoryColor } from '../../domain/colors';
 import type { Category, Dish } from '../../domain/types';
-import { DISH_TAGS } from '../../domain/types';
 import { Button } from '../../ui/Button';
 import { EmptyState, Spinner } from '../../ui/EmptyState';
-import { Icon } from '../../ui/Icon';
-import ui from '../../ui/ui.module.css';
 import { useEditMode } from '../edit-mode/editMode';
 import { AllergyFilterBar, AllergyFilterButton } from '../catalog/AllergyFilter';
 import { useAllergyFilter } from '../catalog/allergyFilterContext';
-import { AddCard, CatalogLayout, ItemCard, RailButton, SearchBox } from '../catalog/CatalogParts';
+import { AddCard, CatalogLayout, ItemCard, RailButton, RailToggle } from '../catalog/CatalogParts';
 import { useCatalogActions } from '../catalog/useCatalogActions';
 import { useItemRoute } from '../catalog/useItemRoute';
 import { CategoryManager } from './CategoryManager';
@@ -34,20 +29,16 @@ export function MenjarScreen() {
   const { excluded } = useAllergyFilter();
   const { deleteItem, moveHandlers } = useCatalogActions();
   const route = useItemRoute();
-  const [query, setQuery] = useState('');
   const [managingCategories, setManagingCategories] = useState(false);
 
   const knownCategory = new Set(categories.map((c) => c.id));
   const categoryOf = (d: Dish) => (knownCategory.has(d.categoryId) ? d.categoryId : '');
 
-  const filtered = useMemo(() => {
-    const tagLabel = (key: string) => DISH_TAGS.find((t) => t.key === key)?.label ?? '';
-    return dishes.filter((d) => matchesQuery(query, [d.name, d.ingredients, d.explanation, d.tags.map(tagLabel)]));
-  }, [dishes, query]);
+  const filtered = dishes;
   const visible = filtered.filter((d) => allergenStatus(d, excluded) !== 'contains');
   const hiddenCount = filtered.length - visible.length;
 
-  const showAll = cat === ALL || query.trim() !== '';
+  const showAll = cat === ALL;
   const sectionCategories = [
     ...categories,
     ...(dishes.some((d) => categoryOf(d) === '') ? [UNCATEGORIZED] : []),
@@ -59,7 +50,7 @@ export function MenjarScreen() {
     group: dishes.filter((d) => categoryOf(d) === c.id),
   }));
   const ordered = sections.flatMap((x) => x.items);
-  const canReorder = editing && !query.trim() && excluded.size === 0;
+  const canReorder = editing && excluded.size === 0;
 
   const selectedDish = route.itemId ? dishes.find((d) => d.id === route.itemId) : undefined;
   const selectedIndex = selectedDish ? ordered.indexOf(selectedDish) : -1;
@@ -71,6 +62,7 @@ export function MenjarScreen() {
     <>
       <TopBar title="Menjar" />
       <CatalogLayout
+        defaultOpen={false}
         rail={
           <>
             <RailButton
@@ -100,8 +92,8 @@ export function MenjarScreen() {
         }
       >
         <div className={s.toolbar}>
-          <SearchBox value={query} onChange={setQuery} placeholder="Cerca plats o ingredients" />
           <AllergyFilterButton />
+          <RailToggle label="Categories" />
         </div>
         <AllergyFilterBar hiddenCount={hiddenCount} />
         <div className={s.scroll}>
@@ -122,7 +114,7 @@ export function MenjarScreen() {
           ) : (
             <>
               {sections.map(({ category, items, group }) => {
-                if (!items.length && !(editing && category.id && !query.trim())) return null;
+                if (!items.length && !(editing && category.id)) return null;
                 return (
                   <section key={category.id || 'none'} className={s.section}>
                     {showAll && (
@@ -136,7 +128,7 @@ export function MenjarScreen() {
                       </h2>
                     )}
                     <div className={s.grid}>
-                      {editing && category.id && !query.trim() && (
+                      {editing && category.id && (
                         <AddCard
                           label={`Afegeix a ${category.name}`}
                           onClick={() => route.openEdit(`new:${category.id}`)}
@@ -153,19 +145,8 @@ export function MenjarScreen() {
                             icon="plate"
                             color={categoryColor(category)}
                             title={d.name}
-                            subtitle={d.ingredients.slice(0, 5).join(', ')}
-                            price={formatPrice(d.price)}
-                            allergens={d.allergens}
-                            traces={d.traces}
                             unavailable={!d.available}
                             warning={status === 'traces'}
-                            badges={
-                              d.tags.includes('recomanat') ? (
-                                <span className={`${ui.badge} ${ui.badgeInfo}`}>
-                                  <Icon name="star" size={16} /> Recomanat
-                                </span>
-                              ) : undefined
-                            }
                             onOpen={() => route.openItem(d.id)}
                             edit={
                               editing

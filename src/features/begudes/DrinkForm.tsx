@@ -9,6 +9,7 @@ import { AllergenPicker } from '../../ui/Allergens';
 import { ChipInput } from '../../ui/ChipInput';
 import { Segmented, TextArea, TextField, Toggle } from '../../ui/Field';
 import { ImagePicker } from '../../ui/ImagePicker';
+import { AllergenManager } from '../allergens/AllergenManager';
 import { FormSection, FormSheet } from '../forms/FormSheet';
 import { TranslationEditor } from '../forms/TranslationEditor';
 import { useItemForm } from '../forms/useItemForm';
@@ -145,6 +146,7 @@ export function DrinkForm({ drink, defaultType, onClose, onSaved }: Props) {
   );
   const live = drinks.find((d) => d.id === initial.id);
   const form = useItemForm(initial, drink ? live : undefined, onSaved);
+  const [managingAllergens, setManagingAllergens] = useState(false);
   const { draft, set } = form;
   const def = DRINK_TYPES[draft.type];
 
@@ -275,7 +277,9 @@ export function DrinkForm({ drink, defaultType, onClose, onSaved }: Props) {
           allergens={draft.allergens}
           traces={draft.traces}
           onChange={({ allergens, traces }) => form.setDraft((d) => ({ ...d, allergens, traces }))}
+          onManage={() => setManagingAllergens(true)}
         />
+        {managingAllergens && <AllergenManager onClose={() => setManagingAllergens(false)} />}
       </FormSection>
     </FormSheet>
   );

@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { AllergenDef } from '../domain/allergens';
 import type { AppConfig, Category, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
 import type { Repository, SyncState } from './repository';
 
@@ -14,6 +15,10 @@ export interface DataContextValue {
   drinks: Drink[];
   categories: Category[];
   guides: Guide[];
+  /** Allergen list in use (the official 14 until customised). */
+  allergens: AllergenDef[];
+  /** True once the restaurant has saved its own allergen list. */
+  allergensCustomized: boolean;
   info: RestaurantInfo | null;
   config: AppConfig | null;
   sync: SyncState;

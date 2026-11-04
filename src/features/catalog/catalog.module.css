@@ -1,8 +1,12 @@
 .layout {
   display: grid;
-  grid-template-columns: calc(var(--rail-w) + var(--safe-left)) 1fr;
+  grid-template-columns: 1fr calc(var(--rail-w) + var(--safe-right));
   flex: 1;
   min-height: 0;
+}
+
+.layoutClosed {
+  grid-template-columns: 1fr;
 }
 
 /* ---------- Rail ---------- */
@@ -11,9 +15,10 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 18px 14px calc(18px + var(--safe-bottom)) calc(14px + var(--safe-left));
+  padding: 18px calc(14px + var(--safe-right)) calc(18px + var(--safe-bottom)) 14px;
   background: var(--bg);
-  border-right: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+  animation: railIn 0.18s ease;
   overflow-y: auto;
 }
 
@@ -72,6 +77,19 @@
   flex: 1;
 }
 
+@keyframes railIn {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+.railToggleOn {
+  background: var(--ink) !important;
+  border-color: var(--ink) !important;
+  color: var(--bg) !important;
+}
+
 /* ---------- Main column ---------- */
 
 .main {
@@ -86,53 +104,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 16px calc(24px + var(--safe-right)) 12px 24px;
-}
-
-.search {
-  position: relative;
-  flex: 1;
-  min-width: 260px;
-  max-width: 560px;
-}
-
-.search input {
-  width: 100%;
-  min-height: var(--tap);
-  padding: 0 52px;
-  border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  outline: none;
-}
-
-.search input:focus {
-  border-color: var(--ink);
-}
-
-.searchIcon {
-  position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
-}
-
-.searchClear {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
+  padding: 16px 24px 12px calc(24px + var(--safe-left));
 }
 
 .filterActive {
@@ -172,7 +144,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 4px calc(24px + var(--safe-right)) calc(32px + var(--safe-bottom)) 24px;
+  padding: 4px 24px calc(32px + var(--safe-bottom)) calc(24px + var(--safe-left));
 }
 
 .section + .section {
@@ -256,6 +228,7 @@
 }
 
 .cardTitle {
+  padding: 12px 8px 6px;
   font-size: 21px;
   font-weight: 700;
   line-height: 1.15;
@@ -324,7 +297,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 260px;
+  min-height: 220px;
   border-radius: var(--radius-lg);
   border: 2px dashed var(--line-strong);
   background: transparent;

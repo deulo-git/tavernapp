@@ -51,6 +51,11 @@ service cloud.firestore {
       allow write: if signedIn() && (deleting() || shortString(request.resource.data.title, 200));
     }
 
+    match /allergens/{id} {
+      allow read: if signedIn();
+      allow write: if signedIn() && (deleting() || shortString(request.resource.data.name, 60));
+    }
+
     match /images/{id} {
       allow read: if signedIn();
       allow write: if signedIn() && (deleting() || shortString(request.resource.data.data, 1000000));

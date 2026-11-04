@@ -1,40 +1,14 @@
-import { ALLERGENS, ALLERGEN_HEADINGS, allergenLabel, type AllergenKey, type UiLang } from '../domain/allergens';
+import { ALLERGEN_HEADINGS, allergenName, type AllergenDef, type AllergenKey, type UiLang } from '../domain/allergens';
+import { useAllergens } from '../data/useAllergens';
 import { AllergenIcon } from './AllergenIcon';
+import { Button } from './Button';
 import s from './ui.module.css';
 
-/** Compact row of allergen icons for cards. */
-export function AllergenBadges({
-  allergens,
-  traces = [],
-  size = 30,
-}: {
-  allergens: readonly AllergenKey[];
-  traces?: readonly AllergenKey[];
-  size?: number;
-}) {
-  if (!allergens.length && !traces.length) return null;
-  return (
-    <div className={s.allergenRow}>
-      {allergens.map((a) => (
-        <span key={a} title={allergenLabel(a)} aria-label={allergenLabel(a)} role="img">
-          <AllergenIcon allergen={a} size={size} />
-        </span>
-      ))}
-      {traces.map((a) => (
-        <span
-          key={`t-${a}`}
-          title={`Traces: ${allergenLabel(a)}`}
-          aria-label={`Traces de ${allergenLabel(a)}`}
-          role="img"
-        >
-          <AllergenIcon allergen={a} size={size} outline />
-        </span>
-      ))}
-    </div>
-  );
+function known(keys: readonly AllergenKey[], byId: Map<string, AllergenDef>): AllergenDef[] {
+  return keys.flatMap((k) => byId.get(k) ?? []);
 }
 
-/** Allergens with icon + label, in the chosen language (detail and customer views). */
+/** Allergens with icon + label, in the chosen language. */
 export function AllergenList({
   allergens,
   traces = [],
@@ -46,30 +20,33 @@ export function AllergenList({
   lang?: UiLang;
   size?: number;
 }) {
+  const { byId } = useAllergens();
   const h = ALLERGEN_HEADINGS[lang];
-  if (!allergens.length && !traces.length) {
+  const contains = known(allergens, byId);
+  const mayContain = known(traces, byId);
+  if (!contains.length && !mayContain.length) {
     return <p className={s.hint}>{h.none}</p>;
   }
   return (
     <div style={{ display: 'grid', gap: 16 }}>
-      {allergens.length > 0 && (
+      {contains.length > 0 && (
         <div className={s.allergenList}>
-          {allergens.map((a) => (
-            <span key={a} className={s.allergenItem}>
+          {contains.map((a) => (
+            <span key={a.id} className={s.allergenItem}>
               <AllergenIcon allergen={a} size={size} />
-              {allergenLabel(a, lang)}
+              {allergenName(a, lang)}
             </span>
           ))}
         </div>
       )}
-      {traces.length > 0 && (
+      {mayContain.length > 0 && (
         <div style={{ display: 'grid', gap: 10 }}>
           <span className={s.label}>{h.traces}</span>
           <div className={s.allergenList}>
-            {traces.map((a) => (
-              <span key={a} className={s.allergenItem}>
+            {mayContain.map((a) => (
+              <span key={a.id} className={s.allergenItem}>
                 <AllergenIcon allergen={a} size={size} outline />
-                {allergenLabel(a, lang)}
+                {allergenName(a, lang)}
               </span>
             ))}
           </div>
@@ -84,11 +61,16 @@ export function AllergenPicker({
   allergens,
   traces,
   onChange,
+  onManage,
 }: {
   allergens: AllergenKey[];
   traces: AllergenKey[];
   onChange: (next: { allergens: AllergenKey[]; traces: AllergenKey[] }) => void;
+  /** Opens the editor of the allergen list itself. */
+  onManage?: () => void;
 }) {
+  const { list } = useAllergens();
+
   const cycle = (key: AllergenKey) => {
     if (allergens.includes(key)) {
       onChange({ allergens: allergens.filter((a) => a !== key), traces: [...traces, key] });
@@ -101,14 +83,20 @@ export function AllergenPicker({
 
   return (
     <div className={s.field}>
-      <span className={s.label}>Al·lèrgens</span>
-      <span className={s.hint}>Toca un cop: “Conté”. Dos cops: “Traces”. Tres cops: cap.</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <span className={s.hint}>Toca un cop: “Conté”. Dos cops: “Traces”. Tres cops: cap.</span>
+        {onManage && (
+          <Button size="sm" icon="settings" onClick={onManage}>
+            Gestiona la llista
+          </Button>
+        )}
+      </div>
       <div className={s.allergenGrid}>
-        {ALLERGENS.map(({ key }) => {
-          const state = allergens.includes(key) ? 'contains' : traces.includes(key) ? 'traces' : 'off';
+        {list.map((a) => {
+          const state = allergens.includes(a.id) ? 'contains' : traces.includes(a.id) ? 'traces' : 'off';
           return (
             <button
-              key={key}
+              key={a.id}
               type="button"
               className={[
                 s.allergenToggle,
@@ -118,11 +106,11 @@ export function AllergenPicker({
               ]
                 .filter(Boolean)
                 .join(' ')}
-              aria-label={`${allergenLabel(key)}: ${state === 'contains' ? 'conté' : state === 'traces' ? 'traces' : 'no'}`}
-              onClick={() => cycle(key)}
+              aria-label={`${a.name}: ${state === 'contains' ? 'conté' : state === 'traces' ? 'traces' : 'no'}`}
+              onClick={() => cycle(a.id)}
             >
-              <AllergenIcon allergen={key} size={44} outline={state === 'traces'} />
-              {allergenLabel(key)}
+              <AllergenIcon allergen={a} size={44} outline={state === 'traces'} />
+              {a.name}
               <span className={s.allergenState}>
                 {state === 'contains' ? 'Conté' : state === 'traces' ? 'Traces' : ' '}
               </span>

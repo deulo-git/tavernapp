@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { ALLERGENS, allergenLabel, type AllergenKey } from '../../domain/allergens';
+import type { AllergenKey } from '../../domain/allergens';
+import { useAllergens } from '../../data/useAllergens';
 import { AllergenIcon } from '../../ui/AllergenIcon';
 import { Button } from '../../ui/Button';
 import { Icon } from '../../ui/Icon';
@@ -12,6 +13,7 @@ import s from './catalog.module.css';
 export function AllergyFilterProvider({ children }: { children: ReactNode }) {
   const [excluded, setExcluded] = useState<ReadonlySet<AllergenKey>>(new Set());
   const [open, setOpen] = useState(false);
+  const { list } = useAllergens();
   const api = useMemo<AllergyFilterApi>(() => ({ excluded, setExcluded, openDialog: () => setOpen(true) }), [excluded]);
 
   const toggle = (key: AllergenKey) => {
@@ -41,18 +43,18 @@ export function AllergyFilterProvider({ children }: { children: ReactNode }) {
                 que poden tenir-ne traces.
               </p>
               <div className={ui.allergenGrid}>
-                {ALLERGENS.map(({ key }) => {
-                  const on = excluded.has(key);
+                {list.map((a) => {
+                  const on = excluded.has(a.id);
                   return (
                     <button
-                      key={key}
+                      key={a.id}
                       type="button"
                       aria-pressed={on}
                       className={[ui.allergenToggle, on ? ui.allergenContains : ui.allergenOff].join(' ')}
-                      onClick={() => toggle(key)}
+                      onClick={() => toggle(a.id)}
                     >
-                      <AllergenIcon allergen={key} size={44} />
-                      {allergenLabel(key)}
+                      <AllergenIcon allergen={a} size={44} />
+                      {a.name}
                       <span className={ui.allergenState}>{on ? 'Al·lèrgic' : ' '}</span>
                     </button>
                   );
@@ -87,12 +89,13 @@ export function AllergyFilterButton() {
 /** Reminder bar shown while a customer allergy filter is active. */
 export function AllergyFilterBar({ hiddenCount }: { hiddenCount: number }) {
   const { excluded, setExcluded, openDialog } = useAllergyFilter();
+  const { byId } = useAllergens();
   if (excluded.size === 0) return null;
   return (
     <div className={s.filterBar} role="status">
       <Icon name="alert" />
       <span className={s.grow}>
-        Sense: {[...excluded].map((a) => allergenLabel(a)).join(', ')}
+        Sense: {[...excluded].map((a) => byId.get(a)?.name ?? a).join(', ')}
         {hiddenCount > 0 && ` · ${hiddenCount} amagats`}
       </span>
       <Button size="sm" onClick={openDialog}>

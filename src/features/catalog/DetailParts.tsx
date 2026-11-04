@@ -1,6 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import type { UiLang } from '../../domain/allergens';
-import type { CatalogItem } from '../../domain/types';
+import type { CatalogItem, ImageRef } from '../../domain/types';
+import type { IconName } from '../../ui/Icon';
+import { ItemImage } from '../../ui/ItemImage';
+import { Lightbox } from '../../ui/Lightbox';
 import { hasTranslation, translatedField } from '../../domain/translation';
 import { relativeTime } from '../../domain/format';
 import { Icon } from '../../ui/Icon';
@@ -114,5 +117,39 @@ export function UnavailableNotice() {
     <div className={s.notice} style={{ background: 'var(--danger-soft)', color: 'var(--danger)' }}>
       <Icon name="alert" /> Esgotat: ara mateix no es pot servir.
     </div>
+  );
+}
+
+/** Detail photo: tap it to see it full screen. */
+export function DetailImage({
+  itemId,
+  image,
+  alt,
+  icon,
+  contain,
+}: {
+  itemId: string;
+  image: ImageRef | null;
+  alt: string;
+  icon: IconName;
+  contain?: boolean;
+}) {
+  const [zoomed, setZoomed] = useState(false);
+  const picture = (
+    <ItemImage itemId={itemId} image={image} alt={alt} icon={icon} full contain={contain} className={s.image} />
+  );
+  if (!image) return picture;
+  return (
+    <>
+      <button
+        type="button"
+        className={s.imageButton}
+        onClick={() => setZoomed(true)}
+        aria-label={`Amplia la foto de ${alt}`}
+      >
+        {picture}
+      </button>
+      {zoomed && <Lightbox itemId={itemId} image={image} alt={alt} onClose={() => setZoomed(false)} />}
+    </>
   );
 }

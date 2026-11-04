@@ -9,6 +9,7 @@ import { AllergenPicker } from '../../ui/Allergens';
 import { ChipInput } from '../../ui/ChipInput';
 import { MultiSelect, Segmented, TextArea, TextField, Toggle } from '../../ui/Field';
 import { ImagePicker } from '../../ui/ImagePicker';
+import { AllergenManager } from '../allergens/AllergenManager';
 import { FormSection, FormSheet } from '../forms/FormSheet';
 import { TranslationEditor } from '../forms/TranslationEditor';
 import { useItemForm } from '../forms/useItemForm';
@@ -51,6 +52,7 @@ export function DishForm({ dish, defaultCategoryId, onClose, onSaved }: Props) {
   );
   const live = dishes.find((d) => d.id === initial.id);
   const form = useItemForm(initial, dish ? live : undefined, onSaved);
+  const [managingAllergens, setManagingAllergens] = useState(false);
   const { draft, set } = form;
   const [priceText, setPriceText] = useState(decimalToInput(initial.price));
 
@@ -149,7 +151,9 @@ export function DishForm({ dish, defaultCategoryId, onClose, onSaved }: Props) {
           allergens={draft.allergens}
           traces={draft.traces}
           onChange={({ allergens, traces }) => form.setDraft((d) => ({ ...d, allergens, traces }))}
+          onManage={() => setManagingAllergens(true)}
         />
+        {managingAllergens && <AllergenManager onClose={() => setManagingAllergens(false)} />}
       </FormSection>
 
       <FormSection title="Cuina" note="Només per al personal: no es mostra mai al client.">

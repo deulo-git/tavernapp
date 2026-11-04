@@ -11,6 +11,7 @@ import { Segmented, TextField } from '../../ui/Field';
 import { PinPad } from '../../ui/PinPad';
 import { useFeedback } from '../../ui/feedback';
 import ui from '../../ui/ui.module.css';
+import { AllergenManager } from '../allergens/AllergenManager';
 import { FormSection } from '../forms/FormSheet';
 import overlay from '../../ui/overlay.module.css';
 import form from '../forms/form.module.css';
@@ -65,6 +66,7 @@ export function SettingsPanel() {
   const { toast, confirm, reportError } = useFeedback();
   const [deviceName, setDeviceNameDraft] = useState(getDeviceName());
   const [changingPin, setChangingPin] = useState(false);
+  const [managingAllergens, setManagingAllergens] = useState(false);
   const [theme, setTheme] = useState<ThemePreference>(getThemePreference());
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -145,6 +147,16 @@ export function SettingsPanel() {
       </FormSection>
 
       <FormSection
+        title="Al·lèrgens"
+        note="Afegeix, canvia o elimina al·lèrgens de la llista que fan servir els plats i les begudes."
+        actions={
+          <Button icon="edit" onClick={() => setManagingAllergens(true)}>
+            Gestiona els al·lèrgens
+          </Button>
+        }
+      />
+
+      <FormSection
         title="PIN del mode edició"
         note="Evita canvis per error. És el mateix a totes les tablets."
         actions={
@@ -204,6 +216,7 @@ export function SettingsPanel() {
       </p>
 
       {changingPin && <ChangePinDialog onClose={() => setChangingPin(false)} />}
+      {managingAllergens && <AllergenManager onClose={() => setManagingAllergens(false)} />}
     </div>
   );
 }
