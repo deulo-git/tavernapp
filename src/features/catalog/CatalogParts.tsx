@@ -1,42 +1,69 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react';
 import { TILE_COLORS, tileStyle, type TileColor } from '../../domain/colors';
 import type { ImageRef } from '../../domain/types';
-import { Button, IconButton } from '../../ui/Button';
-import { RailContext, useRail } from './railContext';
+import { IconButton } from '../../ui/Button';
 import { Icon, type IconName } from '../../ui/Icon';
 import { ItemImage } from '../../ui/ItemImage';
 import ui from '../../ui/ui.module.css';
 import s from './catalog.module.css';
 
+const SWIPE_EDGE_PX = 48;
+const SWIPE_MIN_PX = 60;
+
+/**
+ * Main column plus an index on the right that opens and closes from the right edge:
+ * a pull tab on the edge, or a swipe (from the edge to open, towards the edge to close).
+ */
 export function CatalogLayout({
   rail,
+  railLabel,
   children,
   defaultOpen = true,
 }: {
   rail: ReactNode;
+  /** Name shown on the pull tab, e.g. "Categories". */
+  railLabel: string;
   children: ReactNode;
-  /** Whether the index on the right starts visible. */
+  /** Whether the index starts visible. */
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const context = useMemo(() => ({ open, toggle: () => setOpen((o) => !o) }), [open]);
-  return (
-    <RailContext.Provider value={context}>
-      <div className={[s.layout, !open && s.layoutClosed].filter(Boolean).join(' ')}>
-        <main className={s.main}>{children}</main>
-        {open && <nav className={s.rail}>{rail}</nav>}
-      </div>
-    </RailContext.Provider>
-  );
-}
+  const swipe = useRef<{ x: number; y: number; fromEdge: boolean } | null>(null);
 
-/** Toolbar button that shows or hides the index on the right. */
-export function RailToggle({ label }: { label: string }) {
-  const { open, toggle } = useRail();
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    swipe.current = { x: e.clientX, y: e.clientY, fromEdge: box.right - e.clientX < SWIPE_EDGE_PX };
+  };
+  const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    const start = swipe.current;
+    swipe.current = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(e.clientY - start.y) > Math.abs(dx)) return;
+    if (!open && start.fromEdge && dx < 0) setOpen(true);
+    if (open && dx > 0 && (e.target as HTMLElement).closest('nav')) setOpen(false);
+  };
+
   return (
-    <Button icon="panel" className={open ? s.railToggleOn : undefined} aria-pressed={open} onClick={toggle}>
-      {label}
-    </Button>
+    <div
+      className={[s.layout, !open && s.layoutClosed].filter(Boolean).join(' ')}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerCancel={() => (swipe.current = null)}
+    >
+      <main className={s.main}>{children}</main>
+      {open && <nav className={s.rail}>{rail}</nav>}
+      <button
+        type="button"
+        className={s.railHandle}
+        aria-expanded={open}
+        aria-label={open ? `Amaga ${railLabel.toLowerCase()}` : `Mostra ${railLabel.toLowerCase()}`}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Icon name={open ? 'chevronRight' : 'chevronLeft'} size={22} />
+        <span className={s.railHandleLabel}>{railLabel}</span>
+      </button>
+    </div>
   );
 }
 

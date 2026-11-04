@@ -3,14 +3,14 @@ import { useNavigate, useParams } from 'react-router';
 import { TopBar } from '../../app/TopBar';
 import { useData } from '../../data/store';
 import { allergenStatus } from '../../domain/allergens';
-import { TILE_COLORS, categoryColor } from '../../domain/colors';
+import { categoryColor } from '../../domain/colors';
 import type { Category, Dish } from '../../domain/types';
 import { Button } from '../../ui/Button';
 import { EmptyState, Spinner } from '../../ui/EmptyState';
 import { useEditMode } from '../edit-mode/editMode';
 import { AllergyFilterBar, AllergyFilterButton } from '../catalog/AllergyFilter';
 import { useAllergyFilter } from '../catalog/allergyFilterContext';
-import { AddCard, CatalogLayout, ItemCard, RailButton, RailToggle } from '../catalog/CatalogParts';
+import { AddCard, CatalogLayout, ItemCard, RailButton } from '../catalog/CatalogParts';
 import { useCatalogActions } from '../catalog/useCatalogActions';
 import { useItemRoute } from '../catalog/useItemRoute';
 import { CategoryManager } from './CategoryManager';
@@ -58,10 +58,35 @@ export function MenjarScreen() {
   const editingDish = editTarget && !editTarget.startsWith('new') ? dishes.find((d) => d.id === editTarget) : null;
   const newCategoryId = editTarget?.startsWith('new:') ? editTarget.slice(4) : (categories[0]?.id ?? '');
 
+  /** Reorder arrows only in a single category, where the order is meaningful. */
+  const card = (d: Dish, category: Category, group?: Dish[]) => (
+    <ItemCard
+      key={d.id}
+      itemId={d.id}
+      image={d.image}
+      icon="plate"
+      color={categoryColor(category)}
+      title={d.name}
+      unavailable={!d.available}
+      warning={allergenStatus(d, excluded) === 'traces'}
+      onOpen={() => route.openItem(d.id)}
+      edit={
+        editing
+          ? {
+              onEdit: () => route.openEdit(d.id),
+              onDelete: () => void deleteItem(d),
+              move: canReorder && group ? moveHandlers('dishes', group, group.indexOf(d)) : undefined,
+            }
+          : undefined
+      }
+    />
+  );
+
   return (
     <>
       <TopBar title="Menjar" />
       <CatalogLayout
+        railLabel="Categories"
         defaultOpen={false}
         rail={
           <>
@@ -93,7 +118,6 @@ export function MenjarScreen() {
       >
         <div className={s.toolbar}>
           <AllergyFilterButton />
-          <RailToggle label="Categories" />
         </div>
         <AllergyFilterBar hiddenCount={hiddenCount} />
         <div className={s.scroll}>
@@ -113,57 +137,32 @@ export function MenjarScreen() {
             </EmptyState>
           ) : (
             <>
-              {sections.map(({ category, items, group }) => {
-                if (!items.length && !(editing && category.id)) return null;
-                return (
-                  <section key={category.id || 'none'} className={s.section}>
-                    {showAll && (
-                      <h2 className={s.sectionTitle}>
-                        <span
-                          className={s.railDot}
-                          style={{ background: TILE_COLORS[categoryColor(category)].bg }}
-                          aria-hidden="true"
-                        />
-                        {category.name} <small>{items.length === 1 ? '1 plat' : `${items.length} plats`}</small>
-                      </h2>
-                    )}
-                    <div className={s.grid}>
-                      {editing && category.id && (
-                        <AddCard
-                          label={`Afegeix a ${category.name}`}
-                          onClick={() => route.openEdit(`new:${category.id}`)}
-                        />
-                      )}
-                      {items.map((d) => {
-                        const status = allergenStatus(d, excluded);
-                        const index = group.indexOf(d);
-                        return (
-                          <ItemCard
-                            key={d.id}
-                            itemId={d.id}
-                            image={d.image}
-                            icon="plate"
-                            color={categoryColor(category)}
-                            title={d.name}
-                            unavailable={!d.available}
-                            warning={status === 'traces'}
-                            onOpen={() => route.openItem(d.id)}
-                            edit={
-                              editing
-                                ? {
-                                    onEdit: () => route.openEdit(d.id),
-                                    onDelete: () => void deleteItem(d),
-                                    move: canReorder ? moveHandlers('dishes', group, index) : undefined,
-                                  }
-                                : undefined
-                            }
+              {showAll ? (
+                // "Tota la carta": one big grid, no category headings; each tile keeps its category colour.
+                <div className={`${s.grid} ${s.gridLarge}`}>
+                  {editing && categories.length > 0 && (
+                    <AddCard label="Afegeix un plat" onClick={() => route.openEdit('new')} />
+                  )}
+                  {sections.flatMap(({ category, items }) => items.map((d) => card(d, category)))}
+                </div>
+              ) : (
+                sections.map(({ category, items, group }) => {
+                  if (!items.length && !(editing && category.id)) return null;
+                  return (
+                    <section key={category.id || 'none'} className={s.section}>
+                      <div className={s.grid}>
+                        {editing && category.id && (
+                          <AddCard
+                            label={`Afegeix a ${category.name}`}
+                            onClick={() => route.openEdit(`new:${category.id}`)}
                           />
-                        );
-                      })}
-                    </div>
-                  </section>
-                );
-              })}
+                        )}
+                        {items.map((d) => card(d, category, group))}
+                      </div>
+                    </section>
+                  );
+                })
+              )}
               {ordered.length === 0 && !editing && (
                 <EmptyState icon="search" title="Cap plat coincideix">
                   {hiddenCount > 0 && <p>{hiddenCount} plats amagats pel filtre d’al·lèrgies.</p>}

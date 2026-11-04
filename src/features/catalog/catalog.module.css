@@ -1,4 +1,5 @@
 .layout {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr calc(var(--rail-w) + var(--safe-right));
   flex: 1;
@@ -84,10 +85,40 @@
   }
 }
 
-.railToggleOn {
-  background: var(--ink) !important;
-  border-color: var(--ink) !important;
-  color: var(--bg) !important;
+/* Pull tab on the right edge: opens/closes the index. */
+.railHandle {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--rail-w) + var(--safe-right));
+  z-index: 5;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 36px;
+  padding: 14px 0;
+  border: 1px solid var(--line-strong);
+  border-right: 0;
+  border-radius: 14px 0 0 14px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.layoutClosed .railHandle {
+  right: var(--safe-right);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.railHandleLabel {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 /* ---------- Main column ---------- */
@@ -170,6 +201,12 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
+}
+
+/* "Tota la carta": tiles 20% wider (and so 20% bigger photos). */
+.gridLarge {
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  gap: 18px;
 }
 
 .hiddenNote {
@@ -312,23 +349,6 @@
 
 @media (max-width: 900px) {
   .layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-  }
-
-  .rail {
-    flex-direction: row;
-    overflow-x: auto;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    padding: 10px 14px;
-  }
-
-  .railButton {
-    white-space: nowrap;
-  }
-
-  .railSpacer {
-    display: none;
+    --rail-w: 200px;
   }
 }

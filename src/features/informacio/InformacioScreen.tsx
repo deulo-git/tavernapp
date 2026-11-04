@@ -25,6 +25,7 @@ export function InformacioScreen() {
     <>
       <TopBar title="Informació" />
       <CatalogLayout
+        railLabel="Seccions"
         rail={
           <>
             <RailButton

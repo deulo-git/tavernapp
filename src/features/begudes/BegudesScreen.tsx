@@ -11,7 +11,7 @@ import ui from '../../ui/ui.module.css';
 import { useEditMode } from '../edit-mode/editMode';
 import { AllergyFilterBar, AllergyFilterButton } from '../catalog/AllergyFilter';
 import { useAllergyFilter } from '../catalog/allergyFilterContext';
-import { AddCard, CatalogLayout, ItemCard, RailButton, RailToggle } from '../catalog/CatalogParts';
+import { AddCard, CatalogLayout, ItemCard, RailButton } from '../catalog/CatalogParts';
 import { useCatalogActions } from '../catalog/useCatalogActions';
 import { useItemRoute } from '../catalog/useItemRoute';
 import { DrinkDetail } from './DrinkDetail';
@@ -57,6 +57,7 @@ function DrinksOfType({ type }: { type: DrinkType }) {
     <>
       <TopBar title="Begudes" />
       <CatalogLayout
+        railLabel="Tipus"
         rail={DRINK_TYPE_ORDER.map((t) => (
           <RailButton
             key={t}
@@ -70,7 +71,6 @@ function DrinksOfType({ type }: { type: DrinkType }) {
       >
         <div className={s.toolbar}>
           <AllergyFilterButton />
-          <RailToggle label="Tipus" />
         </div>
         {styles.length > 1 && (
           <div className={s.chipsRow}>
