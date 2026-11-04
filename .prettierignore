@@ -1,0 +1,6 @@
+dist
+dev-dist
+.wrangler
+node_modules
+worker/worker-configuration.d.ts
+public

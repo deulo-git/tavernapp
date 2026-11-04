@@ -1,0 +1,25 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "images",
+      "fieldPath": "data",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "dishes",
+      "fieldPath": "image",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "drinks",
+      "fieldPath": "image",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "guides",
+      "fieldPath": "image",
+      "indexes": []
+    }
+  ]
+}

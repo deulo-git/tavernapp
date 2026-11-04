@@ -1,0 +1,267 @@
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px calc(28px + var(--safe-right)) 40px calc(28px + var(--safe-left));
+}
+
+.aside {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  display: grid;
+  gap: 16px;
+}
+
+.image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.content {
+  display: grid;
+  gap: 26px;
+  align-content: start;
+  min-width: 0;
+}
+
+.headline {
+  display: grid;
+  gap: 10px;
+}
+
+.name {
+  font-size: 44px;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.bigPrice {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.section {
+  display: grid;
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+}
+
+.text {
+  font-size: 20px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.staff {
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 2px dashed var(--line-strong);
+}
+
+.staffLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.specs {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.specs dt,
+.specs dd {
+  margin: 0;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.specs dt {
+  color: var(--ink-2);
+  font-weight: 700;
+  background: var(--surface-2);
+}
+
+.specs dd {
+  font-size: 19px;
+}
+
+.specs dt:nth-last-of-type(1),
+.specs dd:nth-last-of-type(1) {
+  border-bottom: 0;
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.linkList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.navArrows {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .detail {
+    grid-template-columns: 1fr;
+  }
+
+  .aside {
+    position: static;
+  }
+}
+
+/* ---------- "Show to customer" ---------- */
+
+.present {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  animation: presentIn 0.25s ease;
+}
+
+@keyframes presentIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+.presentBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: calc(16px + var(--safe-top)) calc(24px + var(--safe-right)) 16px calc(24px + var(--safe-left));
+}
+
+.presentBody {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+  padding: 0 calc(40px + var(--safe-right)) calc(32px + var(--safe-bottom)) calc(40px + var(--safe-left));
+}
+
+.presentNoImage {
+  grid-template-columns: minmax(0, 860px);
+  justify-content: center;
+}
+
+.presentImage {
+  height: 100%;
+  min-height: 0;
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg);
+}
+
+.presentText {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 12px;
+}
+
+.presentTitle {
+  font-size: clamp(40px, 4.6vw, 64px);
+}
+
+.presentOriginal {
+  margin-top: -14px;
+  font-size: 22px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.presentDescription {
+  font-size: clamp(21px, 2vw, 26px);
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.presentFacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  font-size: 20px;
+}
+
+.presentFacts strong {
+  display: block;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.presentPrice {
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.qr {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.qr svg {
+  width: min(56vh, 420px);
+  height: auto;
+  padding: 18px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: var(--shadow-lg);
+}

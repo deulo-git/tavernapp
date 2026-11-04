@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tavernapp",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "binding": "ASSETS",
+    // The PWA is a single-page app: unknown paths serve index.html.
+    "not_found_handling": "single-page-application",
+    // Only /api/* reaches the Worker; everything else is served straight from static assets.
+    "run_worker_first": ["/api/*"],
+  },
+  "ratelimits": [
+    {
+      "name": "TRANSLATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 30, "period": 60 },
+    },
+  ],
+  "vars": {
+    // Extra origins allowed to call /api/translate, comma-separated (the Worker's own origin is always allowed).
+    "ALLOWED_ORIGINS": "",
+  },
+  "observability": { "enabled": true },
+}

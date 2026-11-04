@@ -1,0 +1,5 @@
+# Copy to .dev.vars for local development (never commit .dev.vars).
+# With TRANSLATE_MOCK=1 the Worker returns fake translations like "[ES] text" without calling DeepL.
+TRANSLATE_MOCK=1
+# Real DeepL API Free key (ends in ":fx"). In production, set it with: npx wrangler secret put DEEPL_API_KEY
+DEEPL_API_KEY=

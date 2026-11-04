@@ -1,0 +1,12 @@
+node_modules
+dist
+.wrangler
+.dev.vars
+.env.local
+.env.*.local
+*.log
+.DS_Store
+.firebase
+firebase-debug.log
+firestore-debug.log
+.claude/settings.local.json
