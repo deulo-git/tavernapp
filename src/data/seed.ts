@@ -12,6 +12,7 @@ import type {
   RestaurantInfo,
   SpecValue,
 } from '../domain/types';
+import { RESTAURANT_NAME } from '../domain/types';
 import { sourceHash } from '../domain/translation';
 import type { WriteOp } from './repository';
 
@@ -35,9 +36,9 @@ const base = (id: string, order: number) => ({
 });
 
 const categories: Category[] = [
-  { id: 'cat-entrants', name: 'Entrants', order: 0, createdAt: Date.now(), updatedAt: Date.now() },
-  { id: 'cat-principals', name: 'Plats principals', order: 1, createdAt: Date.now(), updatedAt: Date.now() },
-  { id: 'cat-postres', name: 'Postres', order: 2, createdAt: Date.now(), updatedAt: Date.now() },
+  { id: 'cat-platets', name: 'Platets', color: 'blau', order: 0, createdAt: Date.now(), updatedAt: Date.now() },
+  { id: 'cat-plats', name: 'Plats', color: 'verd', order: 1, createdAt: Date.now(), updatedAt: Date.now() },
+  { id: 'cat-postres', name: 'Postres', color: 'rosa', order: 2, createdAt: Date.now(), updatedAt: Date.now() },
 ];
 
 function dish(
@@ -115,7 +116,7 @@ const dishes: Dish[] = [
     0,
     {
       name: 'Pa amb tomàquet',
-      categoryId: 'cat-entrants',
+      categoryId: 'cat-platets',
       price: 3.5,
       tags: ['vegetaria', 'vega'],
       ingredients: ['Pa de pagès', 'Tomàquet de penjar', 'Oli d’oliva verge extra', 'Sal', 'All (opcional)'],
@@ -150,7 +151,7 @@ const dishes: Dish[] = [
     1,
     {
       name: 'Escalivada amb anxoves',
-      categoryId: 'cat-entrants',
+      categoryId: 'cat-platets',
       price: 9.5,
       tags: ['temporada'],
       ingredients: ['Albergínia', 'Pebrot vermell', 'Ceba', 'Anxoves de l’Escala', 'Oli d’oliva'],
@@ -187,7 +188,7 @@ const dishes: Dish[] = [
     2,
     {
       name: 'Croquetes de rostit',
-      categoryId: 'cat-entrants',
+      categoryId: 'cat-platets',
       price: 8,
       tags: ['recomanat'],
       ingredients: ['Carn de rostit (pollastre i porc)', 'Llet', 'Farina', 'Mantega', 'Ou', 'Pa ratllat'],
@@ -221,7 +222,7 @@ const dishes: Dish[] = [
     0,
     {
       name: 'Arròs negre',
-      categoryId: 'cat-principals',
+      categoryId: 'cat-plats',
       price: 18.5,
       ingredients: ['Arròs', 'Sípia', 'Tinta de sípia', 'Fumet de peix', 'Sofregit', 'Allioli'],
       allergens: ['molluscs', 'peix', 'ous', 'crustacis'],
@@ -257,7 +258,7 @@ const dishes: Dish[] = [
     1,
     {
       name: 'Botifarra amb mongetes',
-      categoryId: 'cat-principals',
+      categoryId: 'cat-plats',
       price: 14,
       tags: ['senseGluten'],
       ingredients: ['Botifarra de porc', 'Mongetes del ganxet', 'All', 'Julivert', 'Oli d’oliva'],
@@ -607,9 +608,9 @@ const guides: Guide[] = [
   ),
 ];
 
-function info(restaurantName: string): RestaurantInfo {
+function info(): RestaurantInfo {
   return {
-    name: restaurantName,
+    name: RESTAURANT_NAME,
     tagline: 'Cuina catalana de mercat',
     address: '',
     phone: '',
@@ -631,8 +632,8 @@ function info(restaurantName: string): RestaurantInfo {
 }
 
 /** Write operations that load the sample content (restaurant info is merged, not replaced). */
-export function sampleDataOps(restaurantName: string, currentInfo: RestaurantInfo | null): WriteOp[] {
-  const sample = info(restaurantName);
+export function sampleDataOps(currentInfo: RestaurantInfo | null): WriteOp[] {
+  const sample = info();
   const mergedInfo: RestaurantInfo = currentInfo
     ? {
         ...sample,

@@ -5,6 +5,7 @@ import { useData } from '../../data/store';
 import { allergenStatus } from '../../domain/allergens';
 import { DRINK_TYPES, DRINK_TYPE_ORDER, drinkFilterValue } from '../../domain/drinkSpecs';
 import { matchesQuery } from '../../domain/search';
+import { DRINK_TYPE_COLOR } from '../../domain/colors';
 import type { DrinkType } from '../../domain/types';
 import { EmptyState, Spinner } from '../../ui/EmptyState';
 import ui from '../../ui/ui.module.css';
@@ -66,7 +67,7 @@ function DrinksOfType({ type }: { type: DrinkType }) {
           <RailButton
             key={t}
             label={DRINK_TYPES[t].plural}
-            icon={DRINK_ICON[t]}
+            color={DRINK_TYPE_COLOR[t]}
             count={drinks.filter((d) => d.type === t).length}
             active={t === type}
             onClick={() => navigate(`/begudes/${t}`, { replace: true })}
@@ -115,6 +116,7 @@ function DrinksOfType({ type }: { type: DrinkType }) {
                   itemId={d.id}
                   image={d.image}
                   icon={DRINK_ICON[type]}
+                  color={DRINK_TYPE_COLOR[type]}
                   title={d.name}
                   subtitle={drinkSubtitle(d)}
                   price={drinkPriceLabel(d)}

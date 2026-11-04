@@ -3,7 +3,8 @@ import { allergenStatus } from '../src/domain/allergens';
 import { decimalToInput, formatPrice, parseDecimal, wifiQrPayload } from '../src/domain/format';
 import { fitWithin } from '../src/domain/images';
 import { matchesQuery, normalizeText } from '../src/domain/search';
-import { normalizePairingCode } from '../src/domain/security';
+import { DEFAULT_PIN_CONFIG, hashPin, isValidPin } from '../src/domain/security';
+import { categoryColor } from '../src/domain/colors';
 import { hashFields, prepareTranslations, sourceHash, translatedField } from '../src/domain/translation';
 import type { Dish } from '../src/domain/types';
 
@@ -89,9 +90,21 @@ describe('fitWithin', () => {
   });
 });
 
-describe('pairing code', () => {
-  it('ignores case, spaces and dashes', () => {
-    expect(normalizePairingCode(' taverna-7kq4 m2xp ')).toBe('TAVERNA7KQ4M2XP');
+describe('edit PIN', () => {
+  it('accepts the default PIN and only 4 digits', async () => {
+    expect(await hashPin('6998', DEFAULT_PIN_CONFIG.pinSalt)).toBe(DEFAULT_PIN_CONFIG.pinHash);
+    expect(await hashPin('1234', DEFAULT_PIN_CONFIG.pinSalt)).not.toBe(DEFAULT_PIN_CONFIG.pinHash);
+    expect(isValidPin('6998')).toBe(true);
+    expect(isValidPin('69a8')).toBe(false);
+  });
+});
+
+describe('category colours', () => {
+  it('uses the chosen colour, or one from the position', () => {
+    expect(categoryColor({ color: 'rosa', order: 0 })).toBe('rosa');
+    expect(categoryColor({ order: 1 })).toBe('verd');
+    expect(categoryColor({ color: 'invent', order: 0 })).toBe('blau');
+    expect(categoryColor(undefined)).toBe('gris');
   });
 });
 

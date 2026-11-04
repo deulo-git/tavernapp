@@ -3,24 +3,12 @@ import type {
   AppConfig,
   CatalogItem,
   CollectionName,
-  DeviceInfo,
   ItemCollection,
   RestaurantInfo,
   Translations,
 } from '../domain/types';
-import { emptyRestaurantInfo } from '../domain/types';
 import { sourceHash } from '../domain/translation';
-import type {
-  ErrorHandler,
-  InitResult,
-  PairResult,
-  Repository,
-  SetupOptions,
-  StoredImage,
-  SyncState,
-  Unsubscribe,
-  WriteOp,
-} from './repository';
+import type { ErrorHandler, InitResult, Repository, StoredImage, SyncState, Unsubscribe, WriteOp } from './repository';
 
 // Demo-mode repository: everything lives in this browser's IndexedDB. Other tabs of the
 // same browser are kept in sync through a BroadcastChannel.
@@ -31,11 +19,8 @@ interface DocRecord {
   data: Record<string, unknown>;
 }
 
-const DEVICE_ID = 'demo-device';
-
 export class LocalRepository implements Repository {
   readonly mode = 'demo' as const;
-  readonly deviceId = DEVICE_ID;
   private dbPromise: Promise<IDBPDatabase>;
   private listeners = new Map<string, Set<() => void>>();
   private channel: BroadcastChannel | null =
@@ -52,28 +37,7 @@ export class LocalRepository implements Repository {
   }
 
   async init(): Promise<InitResult> {
-    const config = await this.getDoc('config/app');
-    return config ? { status: 'ready' } : { status: 'needsSetup' };
-  }
-
-  async setup(options: SetupOptions): Promise<void> {
-    const now = Date.now();
-    await this.writeBatch([
-      { type: 'set', path: 'config/app', data: { pinHash: options.pinHash, pinSalt: options.pinSalt } },
-      { type: 'set', path: 'config/public', data: { initialized: true, restaurantName: options.restaurantName } },
-      { type: 'set', path: `devices/${DEVICE_ID}`, data: { name: options.deviceName, pairedAt: now } },
-      { type: 'set', path: 'info/restaurant', data: emptyRestaurantInfo(options.restaurantName) },
-    ]);
-  }
-
-  async pair(): Promise<PairResult> {
-    return 'ok';
-  }
-
-  resetPairing(): void {}
-
-  async verifyPairing(): Promise<'paired'> {
-    return 'paired';
+    return { status: 'ready' };
   }
 
   // --- reads -------------------------------------------------------------------------
@@ -132,15 +96,6 @@ export class LocalRepository implements Repository {
 
   subscribeConfig(onData: (config: AppConfig | null) => void, onError: ErrorHandler): Unsubscribe {
     return this.subscribeDoc('config/app', onData, onError);
-  }
-
-  subscribeDevices(onData: (devices: DeviceInfo[]) => void, onError: ErrorHandler): Unsubscribe {
-    return this.listen('devices', () =>
-      (this.dbPromise.then((db) => db.getAllFromIndex('docs', 'col', 'devices')) as Promise<DocRecord[]>).then(
-        (recs) => onData(recs.map((r) => ({ ...(r.data as Omit<DeviceInfo, 'id'>), id: r.path.split('/')[1] }))),
-        (e) => onError(e),
-      ),
-    );
   }
 
   subscribeSync(onState: (state: SyncState) => void): Unsubscribe {
@@ -209,18 +164,5 @@ export class LocalRepository implements Repository {
     if (!current || sourceHash(current) !== srcHash) return false;
     await this.writeBatch([{ type: 'set', path: `${name}/${id}`, data: { ...current, tr } }]);
     return true;
-  }
-
-  async setPairingCode(): Promise<void> {
-    // Pairing is not used in demo mode.
-  }
-
-  async renameDevice(name: string): Promise<void> {
-    const current = await this.getDoc(`devices/${DEVICE_ID}`);
-    await this.writeBatch([{ type: 'set', path: `devices/${DEVICE_ID}`, data: { ...current, name } }]);
-  }
-
-  async unpairDevice(): Promise<void> {
-    // Pairing is not used in demo mode.
   }
 }

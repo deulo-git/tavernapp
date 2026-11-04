@@ -1,75 +1,77 @@
 .home {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 20px;
   flex: 1;
   min-height: 0;
-  padding: 28px calc(28px + var(--safe-right)) calc(28px + var(--safe-bottom)) calc(28px + var(--safe-left));
+  padding: 24px calc(24px + var(--safe-right)) calc(24px + var(--safe-bottom)) calc(24px + var(--safe-left));
 }
 
 .tile {
-  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 22px;
-  padding: 32px 20px;
-  border: 0;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px;
   border-radius: 32px;
-  color: #fff;
-  text-align: center;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: transform 0.1s ease;
+  border: 1px solid transparent;
+  text-align: left;
+  transition: transform 0.12s ease;
 }
 
 .tile:active {
   transform: scale(0.98);
 }
 
-.tile::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 30% 15%, rgb(255 255 255 / 18%), transparent 55%);
-  pointer-events: none;
-}
-
 .menjar {
-  background: linear-gradient(160deg, #c4573a, #93361d);
+  background: var(--accent);
+  color: #111;
 }
 
 .begudes {
-  background: linear-gradient(160deg, #8f2a44, #5c1428);
+  background: #111;
+  color: #fff;
+}
+
+.begudes .iconWrap {
+  color: var(--accent);
+  background: rgb(255 255 255 / 8%);
 }
 
 .informacio {
-  background: linear-gradient(160deg, #6d7b45, #47522a);
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink);
 }
 
-.iconCircle {
+.iconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(120px, 16vw, 180px);
-  height: clamp(120px, 16vw, 180px);
-  border-radius: 50%;
-  background: rgb(255 255 255 / 16%);
-  border: 2px solid rgb(255 255 255 / 35%);
+  width: 96px;
+  height: 96px;
+  border-radius: 28px;
+  background: rgb(0 0 0 / 6%);
+}
+
+.informacio .iconWrap {
+  background: var(--surface-2);
 }
 
 .label {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 4.4vw, 58px);
-  font-weight: 600;
+  display: block;
+  font-size: clamp(36px, 4.4vw, 56px);
+  font-weight: 750;
+  letter-spacing: -0.035em;
   line-height: 1;
 }
 
 .count {
-  font-size: 19px;
-  font-weight: 600;
-  opacity: 0.9;
+  display: block;
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: 500;
+  opacity: 0.7;
 }
 
 @media (orientation: portrait) {
@@ -80,11 +82,7 @@
 
   .tile {
     flex-direction: row;
-    gap: 28px;
-  }
-
-  .iconCircle {
-    width: 120px;
-    height: 120px;
+    align-items: center;
+    justify-content: flex-start;
   }
 }

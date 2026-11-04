@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
-import type { AppConfig, Category, DeviceInfo, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
+import type { AppConfig, Category, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
 import type { Repository, SyncState } from './repository';
 
-export type AppStatus = 'loading' | 'needsSetup' | 'needsPairing' | 'ready' | 'error';
+export type AppStatus = 'loading' | 'ready' | 'error';
 
 export interface DataContextValue {
   repo: Repository;
@@ -16,9 +16,8 @@ export interface DataContextValue {
   guides: Guide[];
   info: RestaurantInfo | null;
   config: AppConfig | null;
-  devices: DeviceInfo[];
   sync: SyncState;
-  /** Re-runs initialization (after setup, pairing or a connection error). */
+  /** Re-runs initialization (after a connection error). */
   reinit(): void;
   /** Starts translating pending items now. */
   kickTranslations(itemId?: string): void;

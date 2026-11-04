@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useData } from '../../data/store';
-import { hashPin } from '../../domain/security';
+import { DEFAULT_PIN_CONFIG, hashPin } from '../../domain/security';
 import { Button } from '../../ui/Button';
 import { PinPad } from '../../ui/PinPad';
 import { useFeedback } from '../../ui/feedback';
@@ -21,13 +21,12 @@ export function EditModeProvider({ children }: { children: ReactNode }) {
   const exitEdit = useCallback(() => setEditing(false), []);
 
   const requestEdit = useCallback(() => {
-    if (!config?.pinHash) setEditing(true);
-    else setAskingPin(true);
-  }, [config]);
+    setAskingPin(true);
+  }, []);
 
   const checkPin = async (pin: string) => {
-    if (!config) return false;
-    const ok = (await hashPin(pin, config.pinSalt)) === config.pinHash;
+    const { pinSalt, pinHash } = config?.pinHash ? config : DEFAULT_PIN_CONFIG;
+    const ok = (await hashPin(pin, pinSalt)) === pinHash;
     if (ok) {
       lastActivity.current = Date.now();
       setAskingPin(false);

@@ -10,9 +10,9 @@
 .rail {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   padding: 18px 14px calc(18px + var(--safe-bottom)) calc(14px + var(--safe-left));
-  background: var(--surface-2);
+  background: var(--bg);
   border-right: 1px solid var(--line);
   overflow-y: auto;
 }
@@ -21,18 +21,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: var(--tap-lg);
+  min-height: var(--tap);
   padding: 8px 14px;
-  border: 2px solid transparent;
+  border: 0;
   border-radius: var(--radius);
   background: transparent;
   text-align: left;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--ink-2);
 }
 
-.railButton span:first-of-type {
+.railLabel {
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
@@ -40,25 +40,32 @@
 }
 
 .railActive {
-  background: var(--surface);
-  border-color: var(--primary);
-  color: var(--ink);
-  box-shadow: var(--shadow);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.railDot {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1.5px rgb(0 0 0 / 14%);
 }
 
 .railCount {
-  min-width: 32px;
+  min-width: 30px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--line);
-  color: var(--ink-2);
+  background: var(--surface-2);
+  color: var(--muted);
   font-size: 14px;
+  font-weight: 600;
   text-align: center;
 }
 
 .railActive .railCount {
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .railSpacer {
@@ -94,13 +101,13 @@
   min-height: var(--tap);
   padding: 0 52px;
   border-radius: 999px;
-  border: 2px solid var(--line-strong);
+  border: 1px solid var(--line-strong);
   background: var(--surface);
   outline: none;
 }
 
 .search input:focus {
-  border-color: var(--primary);
+  border-color: var(--ink);
 }
 
 .searchIcon {
@@ -129,9 +136,9 @@
 }
 
 .filterActive {
-  background: var(--danger-soft) !important;
-  border-color: var(--danger) !important;
-  color: var(--danger) !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--on-accent) !important;
 }
 
 .filterBar {
@@ -142,9 +149,9 @@
   margin: 0 calc(24px + var(--safe-right)) 8px 24px;
   padding: 10px 14px;
   border-radius: var(--radius);
-  background: var(--danger-soft);
-  color: var(--danger);
-  font-weight: 700;
+  background: var(--primary-soft);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .filterBar .grow {
@@ -169,28 +176,28 @@
 }
 
 .section + .section {
-  margin-top: 28px;
+  margin-top: 32px;
 }
 
 .sectionTitle {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   margin: 8px 0 14px;
-  font-size: 28px;
+  font-size: 26px;
 }
 
 .sectionTitle small {
-  font-family: var(--font-body);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0;
   color: var(--muted);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .hiddenNote {
@@ -199,16 +206,15 @@
   font-weight: 600;
 }
 
-/* ---------- Cards ---------- */
+/* ---------- Cards: a soft colour tile with the photo inside ---------- */
 
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
+  background: var(--tile-bg, var(--surface-2));
+  color: var(--tile-ink, var(--ink));
   overflow: hidden;
   text-align: left;
 }
@@ -217,9 +223,10 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 0;
+  padding: 10px;
   border: 0;
   background: transparent;
+  color: inherit;
   text-align: left;
 }
 
@@ -230,27 +237,34 @@
 .cardImage {
   width: 100%;
   aspect-ratio: 4 / 3;
+  border-radius: calc(var(--radius-lg) - 8px);
+  background: rgb(255 255 255 / 45%) !important;
+}
+
+.cardImage > div {
+  background: transparent !important;
+  color: var(--tile-ink, var(--muted)) !important;
+  opacity: 0.35;
 }
 
 .cardBody {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
-  padding: 14px 16px 16px;
+  padding: 12px 8px 6px;
 }
 
 .cardTitle {
-  font-family: var(--font-display);
-  font-size: 23px;
-  font-weight: 600;
+  font-size: 21px;
+  font-weight: 700;
   line-height: 1.15;
 }
 
 .cardSubtitle {
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.3;
+  font-size: 15px;
+  line-height: 1.35;
+  opacity: 0.7;
 }
 
 .cardFooter {
@@ -259,28 +273,24 @@
   justify-content: space-between;
   gap: 8px;
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 6px;
 }
 
 .price {
-  font-weight: 800;
-  font-size: 19px;
+  font-weight: 700;
+  font-size: 18px;
   text-align: right;
 }
 
 .cardBadges {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
+  top: 18px;
+  left: 18px;
+  right: 18px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   pointer-events: none;
-}
-
-.cardBadges > * {
-  box-shadow: var(--shadow);
 }
 
 .unavailable .cardImage,
@@ -289,20 +299,23 @@
 }
 
 .cardWarning {
-  outline: 3px dashed var(--warning);
-  outline-offset: -3px;
+  box-shadow: inset 0 0 0 3px var(--accent);
 }
 
 .cardEdit {
   display: flex;
   gap: 8px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--line);
-  background: var(--edit-soft);
+  padding: 0 10px 10px;
 }
 
 .cardEdit .grow {
   flex: 1;
+}
+
+.cardEdit button {
+  background: rgb(255 255 255 / 70%);
+  border-color: transparent;
+  color: #111;
 }
 
 .addCard {
@@ -310,14 +323,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  min-height: 280px;
+  gap: 10px;
+  min-height: 260px;
   border-radius: var(--radius-lg);
-  border: 3px dashed var(--edit);
-  background: var(--edit-soft);
-  color: var(--edit-ink);
-  font-size: 21px;
-  font-weight: 700;
+  border: 2px dashed var(--line-strong);
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 19px;
+  font-weight: 600;
 }
 
 .addCard:active {

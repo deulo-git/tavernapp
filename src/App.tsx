@@ -9,8 +9,6 @@ import { HomeScreen } from './features/home/HomeScreen';
 import { MenjarScreen } from './features/menjar/MenjarScreen';
 import { BegudesScreen } from './features/begudes/BegudesScreen';
 import { InformacioScreen } from './features/informacio/InformacioScreen';
-import { PairingScreen } from './features/pairing/PairingScreen';
-import { SetupWizard } from './features/pairing/SetupWizard';
 import s from './app/app.module.css';
 
 function Gate() {
@@ -34,10 +32,6 @@ function Gate() {
           </EmptyState>
         </div>
       );
-    case 'needsSetup':
-      return <SetupWizard />;
-    case 'needsPairing':
-      return <PairingScreen />;
     case 'ready':
       return (
         <EditModeProvider>

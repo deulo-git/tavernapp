@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { moveInList, newId, nextOrder, saveCategory } from '../../data/actions';
 import { useData } from '../../data/store';
 import type { Category } from '../../domain/types';
+import { TILE_COLORS, TILE_COLOR_KEYS, categoryColor } from '../../domain/colors';
 import { Button, IconButton } from '../../ui/Button';
 import { Sheet } from '../../ui/Sheet';
 import { useFeedback } from '../../ui/feedback';
@@ -40,8 +41,10 @@ function CategoryRow({
     }
   };
 
+  const current = categoryColor(category);
+
   return (
-    <div className={s.listRow}>
+    <div className={s.listRow} style={{ flexWrap: 'wrap' }}>
       <input
         className={`${ui.input} ${s.grow}`}
         value={name}
@@ -56,6 +59,21 @@ function CategoryRow({
       <IconButton icon="up" label="Mou amunt" onClick={onUp} disabled={!onUp} />
       <IconButton icon="down" label="Mou avall" onClick={onDown} disabled={!onDown} />
       <IconButton icon="trash" label="Elimina" danger onClick={remove} />
+      <div className={ui.swatches} role="radiogroup" aria-label={`Color de ${category.name}`}>
+        {TILE_COLOR_KEYS.map((key) => (
+          <button
+            key={key}
+            type="button"
+            role="radio"
+            aria-checked={key === current}
+            aria-label={TILE_COLORS[key].label}
+            title={TILE_COLORS[key].label}
+            className={[ui.swatch, key === current && ui.swatchOn].filter(Boolean).join(' ')}
+            style={{ background: TILE_COLORS[key].bg }}
+            onClick={() => saveCategory(repo, { ...category, color: key }).catch(reportError)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -69,9 +87,14 @@ export function CategoryManager({ onClose }: { onClose: () => void }) {
     const name = newName.trim();
     if (!name) return;
     const now = Date.now();
-    saveCategory(repo, { id: newId(), name, order: nextOrder(categories), createdAt: now, updatedAt: now }).catch(
-      reportError,
-    );
+    saveCategory(repo, {
+      id: newId(),
+      name,
+      color: TILE_COLOR_KEYS[categories.length % TILE_COLOR_KEYS.length],
+      order: nextOrder(categories),
+      createdAt: now,
+      updatedAt: now,
+    }).catch(reportError);
     setNewName('');
   };
 

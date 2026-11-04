@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { TILE_COLORS, tileStyle, type TileColor } from '../../domain/colors';
 import type { AllergenKey } from '../../domain/allergens';
 import type { ImageRef } from '../../domain/types';
 import { AllergenBadges } from '../../ui/Allergens';
@@ -21,12 +22,15 @@ export function RailButton({
   label,
   count,
   icon,
+  color,
   active,
   onClick,
 }: {
   label: string;
   count?: number;
   icon?: IconName;
+  /** Shows the category's tile colour as a dot. */
+  color?: TileColor;
   active: boolean;
   onClick: () => void;
 }) {
@@ -37,8 +41,12 @@ export function RailButton({
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
     >
-      {icon && <Icon name={icon} />}
-      <span>{label}</span>
+      {color ? (
+        <span className={s.railDot} style={{ background: TILE_COLORS[color].bg }} aria-hidden="true" />
+      ) : (
+        icon && <Icon name={icon} />
+      )}
+      <span className={s.railLabel}>{label}</span>
       {count !== undefined && <span className={s.railCount}>{count}</span>}
     </button>
   );
@@ -87,6 +95,8 @@ interface ItemCardProps {
   image: ImageRef | null;
   icon: IconName;
   title: string;
+  /** Tile colour of the item's category or type. */
+  color: TileColor;
   subtitle?: string;
   price?: string;
   allergens?: readonly AllergenKey[];
@@ -100,11 +110,26 @@ interface ItemCardProps {
 }
 
 export function ItemCard(props: ItemCardProps) {
-  const { itemId, image, icon, title, subtitle, price, allergens, traces, unavailable, warning, badges, onOpen, edit } =
-    props;
+  const {
+    itemId,
+    image,
+    icon,
+    title,
+    color,
+    subtitle,
+    price,
+    allergens,
+    traces,
+    unavailable,
+    warning,
+    badges,
+    onOpen,
+    edit,
+  } = props;
   return (
     <article
       className={[s.card, unavailable && s.unavailable, warning && s.cardWarning].filter(Boolean).join(' ')}
+      style={tileStyle(color) as CSSProperties}
       aria-label={title}
     >
       <button type="button" className={s.cardOpen} onClick={onOpen}>
@@ -147,7 +172,7 @@ export function ItemCard(props: ItemCardProps) {
 export function AddCard({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button type="button" className={s.addCard} onClick={onClick}>
-      <Icon name="plus" size={48} />
+      <Icon name="plus" size={40} />
       {label}
     </button>
   );

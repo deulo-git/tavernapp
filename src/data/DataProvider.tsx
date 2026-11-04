@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import type { AppConfig, Category, CatalogItem, DeviceInfo, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
+import type { AppConfig, Category, CatalogItem, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
 import { itemTitle } from '../domain/types';
 import type { Repository, SyncState } from './repository';
 import { DataContext, type AppStatus, type DataContextValue } from './store';
@@ -24,7 +24,6 @@ export function DataProvider({ repo, children }: Props) {
   const [guides, setGuides] = useState<Guide[] | null>(null);
   const [info, setInfo] = useState<RestaurantInfo | null>(null);
   const [config, setConfig] = useState<AppConfig | null>(null);
-  const [devices, setDevices] = useState<DeviceInfo[]>([]);
   const [sync, setSync] = useState<SyncState>({ online: true, pendingWrites: 0 });
 
   const reinit = useCallback(() => setInitRun((n) => n + 1), []);
@@ -43,7 +42,7 @@ export function DataProvider({ repo, children }: Props) {
 
   useEffect(() => repo.subscribeSync(setSync), [repo]);
 
-  // Live subscriptions while the tablet is ready (paired).
+  // Live subscriptions.
   const [subscriptionRun, setSubscriptionRun] = useState(0);
   const deniedRetries = useRef(0);
   useEffect(() => {
@@ -57,17 +56,10 @@ export function DataProvider({ repo, children }: Props) {
       if (handled) return;
       handled = true;
       unsubs.forEach((u) => u());
-      // Firestore can briefly deny real-time listeners right after a tablet is paired, so only
-      // forget the pairing when the server confirms this tablet's device document is gone.
-      repo.verifyPairing().then((state) => {
-        if (state === 'unpaired') {
-          repo.resetPairing();
-          reinit();
-          return;
-        }
-        const delay = Math.min(30_000, 2_000 * 2 ** deniedRetries.current++);
-        setTimeout(() => setSubscriptionRun((n) => n + 1), delay);
-      });
+      // Firestore can briefly deny real-time listeners right after rules are deployed or a new
+      // anonymous user signs in, so the subscriptions are retried with a growing delay.
+      const delay = Math.min(30_000, 2_000 * 2 ** deniedRetries.current++);
+      setTimeout(() => setSubscriptionRun((n) => n + 1), delay);
     };
     const unsubs = [
       repo.subscribeCollection<Dish>('dishes', (x) => setDishes([...x].sort(sortItems) as Dish[]), onError),
@@ -76,13 +68,12 @@ export function DataProvider({ repo, children }: Props) {
       repo.subscribeCollection<Category>('categories', (x) => setCategories([...x].sort(sortCategories)), onError),
       repo.subscribeInfo(setInfo, onError),
       repo.subscribeConfig(setConfig, onError),
-      repo.subscribeDevices(setDevices, onError),
     ];
     return () => {
       handled = true;
       unsubs.forEach((u) => u());
     };
-  }, [repo, status, reinit, subscriptionRun]);
+  }, [repo, status, subscriptionRun]);
 
   // Background jobs: translations and offline copies of full-size photos.
   const itemsRef = useRef<CatalogItem[]>([]);
@@ -122,12 +113,11 @@ export function DataProvider({ repo, children }: Props) {
       guides: guides ?? [],
       info,
       config,
-      devices,
       sync,
       reinit,
       kickTranslations,
     }),
-    [repo, status, error, dishes, drinks, categories, guides, info, config, devices, sync, reinit, kickTranslations],
+    [repo, status, error, dishes, drinks, categories, guides, info, config, sync, reinit, kickTranslations],
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

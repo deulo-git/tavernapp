@@ -5,6 +5,7 @@ import { useData } from '../../data/store';
 import { allergenStatus } from '../../domain/allergens';
 import { formatPrice } from '../../domain/format';
 import { matchesQuery } from '../../domain/search';
+import { TILE_COLORS, categoryColor } from '../../domain/colors';
 import type { Category, Dish } from '../../domain/types';
 import { DISH_TAGS } from '../../domain/types';
 import { Button } from '../../ui/Button';
@@ -83,6 +84,7 @@ export function MenjarScreen() {
               <RailButton
                 key={c.id}
                 label={c.name}
+                color={categoryColor(c)}
                 count={dishes.filter((d) => d.categoryId === c.id).length}
                 active={cat === c.id}
                 onClick={() => navigate(`/menjar/${c.id}`, { replace: true })}
@@ -125,6 +127,11 @@ export function MenjarScreen() {
                   <section key={category.id || 'none'} className={s.section}>
                     {showAll && (
                       <h2 className={s.sectionTitle}>
+                        <span
+                          className={s.railDot}
+                          style={{ background: TILE_COLORS[categoryColor(category)].bg }}
+                          aria-hidden="true"
+                        />
                         {category.name} <small>{items.length === 1 ? '1 plat' : `${items.length} plats`}</small>
                       </h2>
                     )}
@@ -144,6 +151,7 @@ export function MenjarScreen() {
                             itemId={d.id}
                             image={d.image}
                             icon="plate"
+                            color={categoryColor(category)}
                             title={d.name}
                             subtitle={d.ingredients.slice(0, 5).join(', ')}
                             price={formatPrice(d.price)}

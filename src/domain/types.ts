@@ -111,6 +111,8 @@ export interface Guide extends BaseItem {
 export interface Category {
   id: string;
   name: string;
+  /** Tile colour key (see colors.ts); picked from the position when missing. */
+  color?: string;
   order: number;
   createdAt: number;
   updatedAt: number;
@@ -142,13 +144,6 @@ export interface AppConfig {
   pinSalt: string;
 }
 
-export interface DeviceInfo {
-  id: string;
-  name: string;
-  pairedAt: number;
-  lastSeen?: number;
-}
-
 export type CatalogItem = Dish | Drink | Guide;
 export type ItemCollection = 'dishes' | 'drinks' | 'guides';
 export type CollectionName = ItemCollection | 'categories';
@@ -163,7 +158,9 @@ export function itemTitle(item: CatalogItem): string {
   return item.kind === 'guide' ? item.title : item.name;
 }
 
-export function emptyRestaurantInfo(name = ''): RestaurantInfo {
+export const RESTAURANT_NAME = 'La Taverna del Foment';
+
+export function emptyRestaurantInfo(name = RESTAURANT_NAME): RestaurantInfo {
   return {
     name,
     tagline: '',

@@ -122,23 +122,21 @@ Al final mostra l'adreça de l'app, del tipus `https://tavernapp.<el-teu-subdomi
 Cada cop que es canvia el codi, es torna a executar `npm run deploy`; les tablets mostraran
 "Hi ha una versió nova de l'app · Actualitza ara".
 
-## 5. Primera tablet (configuració inicial)
+## 5. Instal·lar l'app a cada iPad
 
-1. Obre l'adreça de l'app amb **Safari** a l'iPad.
+No hi ha configuració inicial ni codis: les tres tablets veuen el mateix des del primer moment.
+
+1. Obre **https://tavernapp.tavernapp.workers.dev** amb **Safari** a l'iPad.
 2. Toca **Comparteix** (quadre amb fletxa) → **Afegeix a la pantalla d'inici** → **Afegeix**.
-3. Obre l'app **des de la icona** (no des de Safari: l'iPad guarda les dades de l'app instal·lada a part).
-4. Omple l'assistent:
-   - nom del restaurant i nom de la tablet (Sala, Barra…),
-   - **PIN de 4 xifres** per al mode edició,
-   - **codi del restaurant** (p. ex. `TAVERNA-7KQ4-M2XP`): **apunta'l**, és el que permet vincular les
-     altres tablets i no es torna a mostrar (en pots generar un de nou des de Configuració),
-   - opcionalment, dades d'exemple per veure com funciona.
+3. Obre l'app **des de la icona**. Els canvis de qualsevol tablet apareixen a totes en temps real.
 
-## 6. Les altres tablets
+El PIN del mode edició és **6998** (es pot canviar a *Informació → Configuració*).
 
-1. Instal·la l'app igual que abans (Safari → Comparteix → Afegeix a la pantalla d'inici).
-2. Obre-la des de la icona: demanarà el **codi del restaurant** i un nom per a la tablet.
-3. Fet: veurà la mateixa carta i els canvis de qualsevol tablet apareixeran a totes en temps real.
+## 6. Colors de la carta
+
+Cada categoria de menjar té el seu color a la graella (per exemple: blau per als platets, verd per als
+plats, rosa per a les postres). Es canvia en mode edició, a *Menjar → Categories*. Les begudes tenen un
+color per tipus: lila per als vins, groc per a les cerveses i taronja per als licors.
 
 ## 7. Ajustos recomanats de l'iPad
 
@@ -165,7 +163,7 @@ Cada cop que es canvia el codi, es torna a executar `npm run deploy`; les tablet
 
 ### Mode edició
 
-- Botó **Edita** (a dalt a la dreta) → PIN. La barra es torna ambre mentre s'edita.
+- Botó **Edita** (a dalt a la dreta) → PIN. La barra es torna groga mentre s'edita.
 - Apareixen els botons **+ Afegeix**, ✏️ editar, 🗑 eliminar i ↑↓ per ordenar.
 - En eliminar es demana confirmació i hi ha uns segons per **Desfer**.
 - En desar, l'explicació es tradueix automàticament. Les traduccions es poden revisar i corregir a mà
@@ -178,8 +176,6 @@ Cada cop que es canvia el codi, es torna a executar `npm run deploy`; les tablet
 ### Configuració (Informació → Configuració, en mode edició)
 
 - Nom de la tablet, canviar el PIN, tema clar/fosc.
-- **Tablets vinculades**: llista de tablets amb accés. Si una tablet es perd o marxa algú, desvincula-la i
-  genera un **codi nou**.
 - **Còpia de seguretat**: exporta un fitxer amb tota la carta (fotos incloses) via *Desa a Fitxers*, i
   restaura'l si cal. Recomanable fer-ne una de tant en tant.
 
@@ -188,10 +184,11 @@ Cada cop que es canvia el codi, es torna a executar `npm run deploy`; les tablet
 ## Seguretat
 
 - No hi ha usuaris ni contrasenyes: cada tablet s'identifica de manera anònima i invisible.
-- **Només les tablets vinculades amb el codi del restaurant** poden llegir o modificar res; ho imposen
-  les regles de Firestore al servidor, no l'app. El codi es guarda xifrat (hash SHA-256).
-- El **PIN** del mode edició evita canvis per error; no és una barrera contra algú amb coneixements tècnics
-  que tingui una tablet vinculada.
+- **Qualsevol persona que obri l'adreça de l'app la pot veure i, tècnicament, modificar**: no hi ha codi ni
+  login, tal com es va decidir. Les regles de Firestore només barren l'accés a scripts sense sessió i
+  rebutgen documents mal formats o massa grans. Per això és important **no difondre l'adreça** i fer
+  **còpies de seguretat** periòdiques.
+- El **PIN** del mode edició evita canvis per error del personal; es comprova a la tablet, no al servidor.
 - La clau de DeepL només és al servidor de Cloudflare. L'endpoint de traducció limita mida i freqüència
   de peticions.
 
@@ -231,8 +228,8 @@ Estructura principal:
 
 - `src/domain/` — tipus, al·lèrgens UE, especificacions de begudes, cerca, traduccions, imatges.
 - `src/data/` — repositoris (Firestore i demo local), estat global, traduccions en segon pla, còpies.
-- `src/features/` — pantalles (inici, menjar, begudes, informació, configuració, vinculació).
+- `src/features/` — pantalles (inici, menjar, begudes, informació, configuració).
 - `src/ui/` — components tàctils reutilitzables.
 - `worker/` — Cloudflare Worker: serveix l'app i fa de pont amb DeepL (`/api/translate`).
-- `firestore.rules` — regles d'accés (vinculació de tablets).
+- `firestore.rules` — regles d'accés i validació de dades.
 - `npm run icons` — regenera icones i pantalles d'inici de l'iPad a partir de `public/logo.svg`.

@@ -34,11 +34,8 @@ function nextValue<T>(subscribe: (cb: (v: T) => void) => () => void, accept: (v:
 }
 
 describe('LocalRepository', () => {
-  it('needs setup first, then is ready', async () => {
-    const repo = newRepo();
-    expect(await repo.init()).toEqual({ status: 'needsSetup' });
-    await repo.setup({ restaurantName: 'Taverna', deviceName: 'Sala', pinHash: 'h', pinSalt: 's', pairingCode: 'x' });
-    expect(await repo.init()).toEqual({ status: 'ready' });
+  it('is ready straight away, with no setup', async () => {
+    expect(await newRepo().init()).toEqual({ status: 'ready' });
   });
 
   it('notifies collection subscribers about writes', async () => {

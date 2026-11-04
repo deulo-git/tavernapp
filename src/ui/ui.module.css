@@ -498,3 +498,25 @@
     transform: rotate(360deg);
   }
 }
+
+/* ---------- Colour swatches ---------- */
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  padding-top: 4px;
+}
+
+.swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgb(0 0 0 / 8%);
+}
+
+.swatchOn {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}

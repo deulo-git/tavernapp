@@ -1,12 +1,8 @@
 rules_version = '2';
 
-// Access model (no user login):
-//  - Every tablet signs in anonymously (invisible to staff).
-//  - A tablet becomes "paired" by creating devices/{its uid} with the restaurant pairing
-//    code; the rules check sha256(code) against config/security.codeHash.
-//  - Only paired tablets can read or write the menu data.
-//  - The very first tablet bootstraps everything in one batch (setup wizard), which is only
-//    allowed while config/security doesn't exist yet.
+// Access model (no login, no pairing): every tablet signs in anonymously and invisibly, and
+// any signed-in client can read and edit the menu. The edit PIN is only checked on the tablet.
+// These rules keep out unauthenticated scripts and malformed or oversized documents.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -14,105 +10,50 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function paired() {
-      return signedIn() && exists(/databases/$(database)/documents/devices/$(request.auth.uid));
-    }
-
-    // True only inside the first-run setup batch.
-    function bootstrapping() {
-      return signedIn()
-        && !exists(/databases/$(database)/documents/config/security)
-        && existsAfter(/databases/$(database)/documents/config/security)
-        && existsAfter(/databases/$(database)/documents/devices/$(request.auth.uid));
-    }
-
-    function codeMatches(code) {
-      return code is string
-        && hashing.sha256(code).toHexString().lower()
-           == getAfter(/databases/$(database)/documents/config/security).data.codeHash;
-    }
-
     function shortString(value, max) {
       return value is string && value.size() <= max;
     }
 
-    // --- configuration ---------------------------------------------------------------
-
-    match /config/public {
-      allow read: if signedIn();
-      allow write: if paired() || bootstrapping();
+    function deleting() {
+      return request.method == 'delete';
     }
 
     match /config/app {
-      allow read: if paired();
-      allow write: if (paired() || bootstrapping())
+      allow read: if signedIn();
+      allow write: if signedIn()
         && request.resource.data.keys().hasOnly(['pinHash', 'pinSalt'])
         && shortString(request.resource.data.pinHash, 128)
         && shortString(request.resource.data.pinSalt, 64);
     }
 
-    match /config/security {
-      // Never readable by clients (rules read it with get()/getAfter()).
-      allow read: if false;
-      allow create: if bootstrapping()
-        && request.resource.data.keys().hasOnly(['codeHash'])
-        && shortString(request.resource.data.codeHash, 64);
-      allow update: if paired()
-        && request.resource.data.keys().hasOnly(['codeHash'])
-        && shortString(request.resource.data.codeHash, 64);
-      allow delete: if false;
-    }
-
-    // --- tablets -----------------------------------------------------------------------
-
-    match /devices/{uid} {
-      allow get: if signedIn() && (request.auth.uid == uid || paired());
-      allow list: if paired();
-      allow create: if signedIn()
-        && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['name', 'pairedAt', 'code', 'lastSeen'])
-        && shortString(request.resource.data.name, 60)
-        && codeMatches(request.resource.data.code);
-      // A tablet can rename itself, update lastSeen and drop its code, but never add a code back.
-      allow update: if signedIn()
-        && request.auth.uid == uid
-        && !('code' in request.resource.data)
-        && request.resource.data.keys().hasOnly(['name', 'pairedAt', 'lastSeen'])
-        && shortString(request.resource.data.name, 60);
-      allow delete: if paired();
-    }
-
-    // --- menu data --------------------------------------------------------------------
-
     match /info/restaurant {
-      allow read: if paired();
-      allow write: if paired() || bootstrapping();
+      allow read: if signedIn();
+      allow write: if signedIn() && (deleting() || shortString(request.resource.data.name, 200));
     }
 
     match /categories/{id} {
-      allow read: if paired();
-      allow write: if paired() && (request.method == 'delete' || shortString(request.resource.data.name, 120));
+      allow read: if signedIn();
+      allow write: if signedIn() && (deleting() || shortString(request.resource.data.name, 120));
     }
 
     match /dishes/{id} {
-      allow read: if paired();
-      allow write: if paired() && (request.method == 'delete' || shortString(request.resource.data.name, 200));
+      allow read: if signedIn();
+      allow write: if signedIn() && (deleting() || shortString(request.resource.data.name, 200));
     }
 
     match /drinks/{id} {
-      allow read: if paired();
-      allow write: if paired() && (request.method == 'delete' || shortString(request.resource.data.name, 200));
+      allow read: if signedIn();
+      allow write: if signedIn() && (deleting() || shortString(request.resource.data.name, 200));
     }
 
     match /guides/{id} {
-      allow read: if paired();
-      allow write: if paired() && (request.method == 'delete' || shortString(request.resource.data.title, 200));
+      allow read: if signedIn();
+      allow write: if signedIn() && (deleting() || shortString(request.resource.data.title, 200));
     }
 
     match /images/{id} {
-      allow read: if paired();
-      allow write: if paired()
-        && (request.method == 'delete' || shortString(request.resource.data.data, 1000000));
+      allow read: if signedIn();
+      allow write: if signedIn() && (deleting() || shortString(request.resource.data.data, 1000000));
     }
   }
 }

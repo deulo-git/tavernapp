@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useData } from '../../data/store';
 import { matchesQuery } from '../../domain/search';
+import { GUIDE_TOPIC_COLOR } from '../../domain/colors';
 import type { GuideTopic } from '../../domain/types';
 import { GUIDE_TOPICS } from '../../domain/types';
 import { EmptyState } from '../../ui/EmptyState';
@@ -63,6 +64,7 @@ export function GuidesView() {
             itemId={g.id}
             image={g.image}
             icon="book"
+            color={GUIDE_TOPIC_COLOR[g.topic]}
             title={g.title}
             subtitle={g.body.split('\n')[0].slice(0, 110) + (g.body.length > 110 ? '…' : '')}
             badges={<span className={ui.badge}>{GUIDE_TOPICS.find((t) => t.key === g.topic)?.label}</span>}

@@ -5,8 +5,7 @@ import { getDeviceName, setDeviceName } from '../../data/actions';
 import { backupFileName, buildBackup, restoreOps, shareOrDownload, validateBackup } from '../../data/backup';
 import { sampleDataOps } from '../../data/seed';
 import { useData } from '../../data/store';
-import { relativeTime } from '../../domain/format';
-import { generatePairingCode, hashPin, randomToken } from '../../domain/security';
+import { hashPin, randomToken } from '../../domain/security';
 import { Button } from '../../ui/Button';
 import { Segmented, TextField } from '../../ui/Field';
 import { PinPad } from '../../ui/PinPad';
@@ -60,32 +59,12 @@ function ChangePinDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-function CodeDialog({ code, onClose }: { code: string; onClose: () => void }) {
-  return createPortal(
-    <div className={overlay.backdrop}>
-      <div className={overlay.dialog} role="dialog" aria-modal="true">
-        <h2>Codi del restaurant nou</h2>
-        <p className={overlay.dialogMessage}>
-          Apunta’l en un lloc segur: no es tornarà a mostrar. Les tablets ja vinculades continuen funcionant; el
-          necessitaràs per vincular-ne de noves.
-        </p>
-        <div className={s.code}>{code}</div>
-        <Button variant="primary" size="lg" block onClick={onClose}>
-          L’he apuntat
-        </Button>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
 export function SettingsPanel() {
   const data = useData();
-  const { repo, devices, info } = data;
+  const { repo, info } = data;
   const { toast, confirm, reportError } = useFeedback();
   const [deviceName, setDeviceNameDraft] = useState(getDeviceName());
   const [changingPin, setChangingPin] = useState(false);
-  const [newCode, setNewCode] = useState<string | null>(null);
   const [theme, setTheme] = useState<ThemePreference>(getThemePreference());
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -94,38 +73,7 @@ export function SettingsPanel() {
     const name = deviceName.trim();
     if (!name) return;
     setDeviceName(name);
-    repo.renameDevice(name).catch(reportError);
     toast('Nom de la tablet desat.');
-  };
-
-  const regenerateCode = async () => {
-    const ok = await confirm({
-      title: 'Generar un codi nou?',
-      message:
-        'El codi anterior deixarà de servir per vincular tablets noves. Les que ja estan vinculades no es veuen afectades.',
-      confirmLabel: 'Genera',
-    });
-    if (!ok) return;
-    const code = generatePairingCode();
-    try {
-      await repo.setPairingCode(code);
-      setNewCode(code);
-    } catch (err) {
-      reportError(err);
-    }
-  };
-
-  const unpair = async (id: string, name: string) => {
-    const self = id === repo.deviceId;
-    const ok = await confirm({
-      title: `Desvincular «${name}»?`,
-      message: self
-        ? 'Aquesta tablet deixarà de tenir accés. Per tornar-la a fer servir caldrà el codi del restaurant.'
-        : 'Aquesta tablet deixarà de tenir accés a la carta fins que la tornis a vincular amb el codi del restaurant.',
-      confirmLabel: 'Desvincula',
-      danger: true,
-    });
-    if (ok) repo.unpairDevice(id).catch(reportError);
   };
 
   const exportBackup = async () => {
@@ -174,7 +122,7 @@ export function SettingsPanel() {
       confirmLabel: 'Carrega',
     });
     if (ok) {
-      await repo.writeBatch(sampleDataOps(info?.name ?? '', info));
+      await repo.writeBatch(sampleDataOps(info));
       toast("S'han carregat les dades d'exemple.");
     }
   };
@@ -205,34 +153,6 @@ export function SettingsPanel() {
           </Button>
         }
       />
-
-      {repo.mode === 'firebase' && (
-        <FormSection
-          title="Tablets vinculades"
-          note="Només les tablets vinculades amb el codi del restaurant poden veure i editar la carta."
-          actions={
-            <Button icon="refresh" onClick={regenerateCode}>
-              Codi nou
-            </Button>
-          }
-        >
-          {devices.map((d) => (
-            <div key={d.id} className={form.listRow}>
-              <div className={form.grow}>
-                <strong>{d.name}</strong>{' '}
-                {d.id === repo.deviceId && <span className={`${ui.badge} ${ui.badgeSuccess}`}>Aquesta tablet</span>}
-                <div className={ui.hint}>
-                  Vinculada {relativeTime(d.pairedAt)}
-                  {d.lastSeen ? ` · activa ${relativeTime(d.lastSeen)}` : ''}
-                </div>
-              </div>
-              <Button variant="dangerOutline" size="sm" icon="close" onClick={() => unpair(d.id, d.name)}>
-                Desvincula
-              </Button>
-            </div>
-          ))}
-        </FormSection>
-      )}
 
       <FormSection
         title="Còpia de seguretat"
@@ -284,7 +204,6 @@ export function SettingsPanel() {
       </p>
 
       {changingPin && <ChangePinDialog onClose={() => setChangingPin(false)} />}
-      {newCode && <CodeDialog code={newCode} onClose={() => setNewCode(null)} />}
     </div>
   );
 }
