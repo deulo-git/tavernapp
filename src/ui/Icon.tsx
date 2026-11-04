@@ -28,6 +28,7 @@ import {
   Lock,
   LockOpen,
   Mail,
+  Minus,
   MapPin,
   Martini,
   Moon,
@@ -39,6 +40,7 @@ import {
   QrCode,
   RefreshCw,
   Search,
+  ShieldCheck,
   SlidersHorizontal,
   Star,
   Sun,
@@ -104,6 +106,8 @@ const ICONS = {
   key: KeyRound,
   backspace: Delete,
   panel: PanelRight,
+  minus: Minus,
+  admin: ShieldCheck,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

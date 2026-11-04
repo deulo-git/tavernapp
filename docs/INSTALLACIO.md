@@ -132,6 +132,8 @@ No hi ha configuració inicial ni codis: les tres tablets veuen el mateix des de
 
 El PIN del mode edició és **6998** (es pot canviar a *Informació → Configuració*).
 
+El botó d’escut de la barra superior obre l’**administració de mides** (contrasenya **1111**): mida general, botó de Menjar, targetes, nom de les targetes, foto de la fitxa i índex lateral. Els canvis es veuen al moment i, en tocar *Desa*, s’apliquen a totes les tablets.
+
 ## 6. Colors de la carta
 
 Cada categoria de menjar té el seu color a la graella (per exemple: blau per als platets, verd per als

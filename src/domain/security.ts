@@ -21,6 +21,12 @@ export function isValidPin(pin: string): boolean {
 }
 
 /** PIN used until someone changes it in Configuració (hash of the restaurant's PIN). */
+/** Admin password (1111) for the interface sizes panel. */
+export const ADMIN_PIN_CONFIG = {
+  pinSalt: 'tavernapp-admin',
+  pinHash: '601b6d963020759f2e02c1745df2050ad6382f70b8b7b17962c380384f0e9596',
+};
+
 export const DEFAULT_PIN_CONFIG = {
   pinSalt: 'tavernapp-default',
   pinHash: 'dd915b633633dc7f396a393e7590b190829fc87b3c05807595c79fab3175886a',

@@ -1,7 +1,7 @@
 .home {
   display: grid;
   /* Menjar is used most: its tile (and photo collage) is 40% wider than the other two. */
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, var(--home-menjar, 1.4fr)) minmax(0, 1fr) minmax(0, 1fr);
   gap: 20px;
   flex: 1;
   min-height: 0;
@@ -117,7 +117,7 @@
 @media (orientation: portrait) {
   .home {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, var(--home-menjar, 1.4fr)) minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .tile {

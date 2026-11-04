@@ -1,6 +1,6 @@
 .detail {
   display: grid;
-  grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
+  grid-template-columns: minmax(0, var(--detail-image, 44%)) minmax(0, 1fr);
   gap: 32px;
   max-width: 1400px;
   margin: 0 auto;

@@ -1,3 +1,4 @@
+import type { UiSizes } from '../domain/uiSizes';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, type Auth } from 'firebase/auth';
 import {
@@ -162,6 +163,10 @@ export class FirestoreRepository implements Repository {
     return this.subscribeDoc(['config', 'app'], onData, onError);
   }
 
+  subscribeUiSizes(onData: (sizes: Partial<UiSizes> | null) => void, onError: ErrorHandler): Unsubscribe {
+    return this.subscribeDoc(['config', 'ui'], onData, onError);
+  }
+
   // --- writes ------------------------------------------------------------------------------
 
   private ref(path: string) {
@@ -187,6 +192,10 @@ export class FirestoreRepository implements Repository {
 
   putConfig(config: AppConfig): Promise<void> {
     return this.track(setDoc(doc(this.db, 'config', 'app'), config));
+  }
+
+  putUiSizes(sizes: UiSizes): Promise<void> {
+    return this.track(setDoc(doc(this.db, 'config', 'ui'), { ...sizes }));
   }
 
   async writeBatch(ops: WriteOp[]): Promise<void> {

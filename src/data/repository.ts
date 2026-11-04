@@ -1,3 +1,4 @@
+import type { UiSizes } from '../domain/uiSizes';
 import type { AppConfig, CollectionName, ItemCollection, RestaurantInfo, Translations } from '../domain/types';
 
 // Storage abstraction with two implementations: Firestore (real, shared by the 3 tablets)
@@ -36,6 +37,8 @@ export interface Repository {
   subscribeCollection<T>(name: CollectionName, onData: (items: T[]) => void, onError: ErrorHandler): Unsubscribe;
   subscribeInfo(onData: (info: RestaurantInfo | null) => void, onError: ErrorHandler): Unsubscribe;
   subscribeConfig(onData: (config: AppConfig | null) => void, onError: ErrorHandler): Unsubscribe;
+  /** Interface sizes shared by every tablet (config/ui). */
+  subscribeUiSizes(onData: (sizes: Partial<UiSizes> | null) => void, onError: ErrorHandler): Unsubscribe;
   subscribeSync(onState: (state: SyncState) => void): Unsubscribe;
 
   // Writes resolve when the server confirms them. Offline they stay pending (and are
@@ -45,6 +48,7 @@ export interface Repository {
   remove(name: CollectionName, id: string): Promise<void>;
   putInfo(info: RestaurantInfo): Promise<void>;
   putConfig(config: AppConfig): Promise<void>;
+  putUiSizes(sizes: UiSizes): Promise<void>;
   writeBatch(ops: WriteOp[]): Promise<void>;
 
   getImage(id: string, v: number): Promise<string | null>;

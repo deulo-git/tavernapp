@@ -26,6 +26,25 @@ service cloud.firestore {
         && shortString(request.resource.data.pinSalt, 64);
     }
 
+    function sizeIn(value, lo, hi) {
+      return value is number && value >= lo && value <= hi;
+    }
+
+    // Interface sizes from the admin panel, shared by every tablet.
+    match /config/ui {
+      allow read: if signedIn();
+      allow write: if signedIn()
+        && request.resource.data.keys().hasOnly(
+          ['zoom', 'menjarTile', 'cardSize', 'cardSizeAll', 'cardTitle', 'detailImage', 'railWidth'])
+        && sizeIn(request.resource.data.get('zoom', 100), 50, 200)
+        && sizeIn(request.resource.data.get('menjarTile', 140), 50, 300)
+        && sizeIn(request.resource.data.get('cardSize', 240), 100, 600)
+        && sizeIn(request.resource.data.get('cardSizeAll', 288), 100, 600)
+        && sizeIn(request.resource.data.get('cardTitle', 21), 8, 60)
+        && sizeIn(request.resource.data.get('detailImage', 44), 10, 90)
+        && sizeIn(request.resource.data.get('railWidth', 232), 100, 500);
+    }
+
     match /info/restaurant {
       allow read: if signedIn();
       allow write: if signedIn() && (deleting() || shortString(request.resource.data.name, 200));

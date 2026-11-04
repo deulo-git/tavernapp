@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { useAdmin } from '../features/admin/adminMode';
 import { useEditMode } from '../features/edit-mode/editMode';
 import { Button, IconButton } from '../ui/Button';
 import { Icon } from '../ui/Icon';
@@ -17,6 +18,7 @@ interface Props {
 export function TopBar({ title, subtitle, showHome = true, extra }: Props) {
   const navigate = useNavigate();
   const { editing, requestEdit, exitEdit } = useEditMode();
+  const { requestAdmin, panelOpen } = useAdmin();
 
   return (
     <header className={[s.topbar, editing && s.topbarEditing].filter(Boolean).join(' ')}>
@@ -33,6 +35,7 @@ export function TopBar({ title, subtitle, showHome = true, extra }: Props) {
           </span>
         )}
         <SyncIndicator />
+        {!panelOpen && <IconButton icon="admin" label="Admin" onClick={requestAdmin} />}
         {editing ? (
           <Button variant="edit" icon="check" onClick={exitEdit}>
             Surt

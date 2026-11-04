@@ -199,13 +199,13 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--card-min, 240px)), 1fr));
   gap: 16px;
 }
 
 /* "Tota la carta": tiles 20% wider (and so 20% bigger photos). */
 .gridLarge {
-  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--card-min-all, 288px)), 1fr));
   gap: 18px;
 }
 
@@ -266,7 +266,7 @@
 
 .cardTitle {
   padding: 12px 8px 6px;
-  font-size: 21px;
+  font-size: var(--card-title, 21px);
   font-weight: 700;
   line-height: 1.15;
 }
@@ -347,8 +347,3 @@
   transform: scale(0.98);
 }
 
-@media (max-width: 900px) {
-  .layout {
-    --rail-w: 200px;
-  }
-}

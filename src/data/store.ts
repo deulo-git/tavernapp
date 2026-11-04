@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { AllergenDef } from '../domain/allergens';
+import type { UiSizes } from '../domain/uiSizes';
 import type { AppConfig, Category, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
 import type { Repository, SyncState } from './repository';
 
@@ -21,6 +22,8 @@ export interface DataContextValue {
   allergensCustomized: boolean;
   info: RestaurantInfo | null;
   config: AppConfig | null;
+  /** Interface sizes shared by every tablet. */
+  uiSizes: UiSizes;
   sync: SyncState;
   /** Re-runs initialization (after a connection error). */
   reinit(): void;

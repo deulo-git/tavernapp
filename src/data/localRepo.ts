@@ -1,3 +1,4 @@
+import type { UiSizes } from '../domain/uiSizes';
 import { openDB, type IDBPDatabase } from 'idb';
 import type {
   AppConfig,
@@ -98,6 +99,10 @@ export class LocalRepository implements Repository {
     return this.subscribeDoc('config/app', onData, onError);
   }
 
+  subscribeUiSizes(onData: (sizes: Partial<UiSizes> | null) => void, onError: ErrorHandler): Unsubscribe {
+    return this.subscribeDoc('config/ui', onData, onError);
+  }
+
   subscribeSync(onState: (state: SyncState) => void): Unsubscribe {
     onState({ online: true, pendingWrites: 0 });
     return () => {};
@@ -140,6 +145,10 @@ export class LocalRepository implements Repository {
 
   putConfig(config: AppConfig): Promise<void> {
     return this.writeBatch([{ type: 'set', path: 'config/app', data: config }]);
+  }
+
+  putUiSizes(sizes: UiSizes): Promise<void> {
+    return this.writeBatch([{ type: 'set', path: 'config/ui', data: { ...sizes } }]);
   }
 
   async getImage(id: string): Promise<string | null> {

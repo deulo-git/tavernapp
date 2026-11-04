@@ -1,3 +1,4 @@
+import { applyUiSizes, cachedUiSizes, normalizeUiSizes, type UiSizes } from '../domain/uiSizes';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { resolveAllergens, type AllergenDef } from '../domain/allergens';
 import type { AppConfig, Category, CatalogItem, Dish, Drink, Guide, RestaurantInfo } from '../domain/types';
@@ -26,6 +27,7 @@ export function DataProvider({ repo, children }: Props) {
   const [storedAllergens, setStoredAllergens] = useState<AllergenDef[]>([]);
   const [info, setInfo] = useState<RestaurantInfo | null>(null);
   const [config, setConfig] = useState<AppConfig | null>(null);
+  const [uiSizes, setUiSizes] = useState<UiSizes>(cachedUiSizes);
   const [sync, setSync] = useState<SyncState>({ online: true, pendingWrites: 0 });
 
   const reinit = useCallback(() => setInitRun((n) => n + 1), []);
@@ -71,12 +73,15 @@ export function DataProvider({ repo, children }: Props) {
       repo.subscribeCollection<AllergenDef>('allergens', setStoredAllergens, onError),
       repo.subscribeInfo(setInfo, onError),
       repo.subscribeConfig(setConfig, onError),
+      repo.subscribeUiSizes((x) => setUiSizes(normalizeUiSizes(x)), onError),
     ];
     return () => {
       handled = true;
       unsubs.forEach((u) => u());
     };
   }, [repo, status, subscriptionRun]);
+
+  useEffect(() => applyUiSizes(uiSizes), [uiSizes]);
 
   // Background jobs: translations and offline copies of full-size photos.
   const itemsRef = useRef<CatalogItem[]>([]);
@@ -118,6 +123,7 @@ export function DataProvider({ repo, children }: Props) {
       allergensCustomized: storedAllergens.length > 0,
       info,
       config,
+      uiSizes,
       sync,
       reinit,
       kickTranslations,
@@ -133,6 +139,7 @@ export function DataProvider({ repo, children }: Props) {
       storedAllergens,
       info,
       config,
+      uiSizes,
       sync,
       reinit,
       kickTranslations,

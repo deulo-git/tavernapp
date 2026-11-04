@@ -4,6 +4,7 @@ import { InstallHint, UpdatePrompt } from './app/PwaPrompts';
 import { Button } from './ui/Button';
 import { EmptyState, Spinner } from './ui/EmptyState';
 import { AllergyFilterProvider } from './features/catalog/AllergyFilter';
+import { AdminProvider } from './features/admin/AdminProvider';
 import { EditModeProvider } from './features/edit-mode/EditModeProvider';
 import { HomeScreen } from './features/home/HomeScreen';
 import { MenjarScreen } from './features/menjar/MenjarScreen';
@@ -34,17 +35,19 @@ function Gate() {
       );
     case 'ready':
       return (
-        <EditModeProvider>
-          <AllergyFilterProvider>
-            <Routes>
-              <Route path="/" element={<HomeScreen />} />
-              <Route path="/menjar/:cat?" element={<MenjarScreen />} />
-              <Route path="/begudes/:tipus?" element={<BegudesScreen />} />
-              <Route path="/informacio/:tab?" element={<InformacioScreen />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AllergyFilterProvider>
-        </EditModeProvider>
+        <AdminProvider>
+          <EditModeProvider>
+            <AllergyFilterProvider>
+              <Routes>
+                <Route path="/" element={<HomeScreen />} />
+                <Route path="/menjar/:cat?" element={<MenjarScreen />} />
+                <Route path="/begudes/:tipus?" element={<BegudesScreen />} />
+                <Route path="/informacio/:tab?" element={<InformacioScreen />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </AllergyFilterProvider>
+          </EditModeProvider>
+        </AdminProvider>
       );
   }
 }
